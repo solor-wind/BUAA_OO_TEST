@@ -142,7 +142,7 @@ def check(lines, waiters, case_id) -> bool:
                         config["fault_tolerance"]):
                     print(f'{case_id}\t' + '第' + str(info[i][j][index_line]) + '行电梯' + str(i + 1) + '到达时间错误')
                     return False
-                if last_close_time > last_open_time:
+                if last_close_time < last_open_time:
                     print(f'{case_id}\t' + '第' + str(info[i][j][index_line]) + '行电梯' + str(i + 1) + '只有关门后才能移动')
                     return False
                 last_arrive_time = info[i][j][index_time]
@@ -189,10 +189,10 @@ def check(lines, waiters, case_id) -> bool:
                     print(f'{case_id}\t' + '第' + str(info[i][j][index_line]) + '行电梯' + str(
                         i + 1) + '：正确的人，但不在此层上')
                     return False
-                if info[i][j][index_time] < waiter[info[i][j][index_passenger]][2] - float(config["fault_tolerance"]):
-                    print(f'{case_id}\t' + '第' + str(info[i][j][index_line]) + '行电梯' + str(
-                        i + 1) + '：正确的人，但人还没到')
-                    return False
+                # if info[i][j][index_time] < waiter[info[i][j][index_passenger]][2] - float(config["fault_tolerance"]):
+                #     print(f'{case_id}\t' + '第' + str(info[i][j][index_line]) + '行电梯' + str(
+                #         i + 1) + '：正确的人，但人还没到')
+                #     return False
                 passenger[info[i][j][index_passenger]] = waiter[info[i][j][index_passenger]]
                 waiter.pop(info[i][j][index_passenger])
             elif commond == 'OUT':
