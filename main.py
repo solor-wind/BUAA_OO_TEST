@@ -123,6 +123,9 @@ def check(lines, waiters, case_id) -> bool:
         if line[index_command] not in ['ARRIVE', 'OPEN', 'CLOSE', 'IN', 'OUT']:
             print(f'{case_id}\t' + '第' + str(i + 1) + '行指令错误')
             return False
+        if line[index_elevator] > 6 or line[index_elevator] < 1:
+            print(f'{case_id}\t' + '第' + str(i + 1) + '行不存在的电梯')
+            return False
 
     for i in range(0, 6):  # 电梯数量
         passenger = {}  # 电梯内的人
