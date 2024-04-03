@@ -1,6 +1,8 @@
 {
   "in_path": "input.exe",
   "jar_path": "D:\\study\\OO\\project\\OO\\hw_5\\out\\artifacts\\hw_5_jar\\code.jar",
+  "input_path":"input.txt",
+  "output_path":"output.txt",
 
   "deleteTempFile": true,
   "set_clock": false,
