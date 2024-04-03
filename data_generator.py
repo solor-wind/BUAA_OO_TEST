@@ -22,7 +22,7 @@ class DataGenerator:
     def generate_data(self):
         global time_limit, reset_prob
         self.generate_time_list()
-        self.generate_customerId_list()
+        self.generate_customerid_list()
         for i in range(self.input_num):
             if random.random() < reset_prob:
                 temp_elevator_id_list = [1, 2, 3, 4, 5, 6]
