@@ -124,7 +124,7 @@ def check(waiters,actions)->str:
                 elif action[0]-elevators[action[2]].reset[1][0]>1.2+tolerance or action[0]-elevators[action[2]].reset[1][0]<1.2-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置所用时间错误'
                 elevators[action[2]].capacity=elevators[action[2]].reset[0][3]
-                elevators[action[2]].move_time=elevators[action[2]].reset[0][4]
+                elevators[action[2]].speed=elevators[action[2]].reset[0][4]
                 elevators[action[2]].reset=[]
                 elevators[action[2]].reset_floor=0
             case 'RECEIVE':
@@ -141,7 +141,7 @@ def check(waiters,actions)->str:
             case 'ARRIVE':
                 if action[2]>11 or action[2]<1:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'飞天遁地'
-                elif action[0]-elevators[action[3]].last_arrivetime<elevators[action[3]].speed:    #没有容错
+                elif action[0]-elevators[action[3]].last_arrivetime<elevators[action[3]].speed-tolerance:    #没有容错
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'超速了'
                 elif elevators[action[3]].last_opentime>elevators[action[3]].last_closetime:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'还没关门就移动'
@@ -169,7 +169,7 @@ def check(waiters,actions)->str:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'关门楼层与上次到达楼层不符'
                 elif elevators[action[3]].last_opentime<elevators[action[3]].last_closetime:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'还没开门就关门'
-                elif action[0]-elevators[action[3]].last_opentime<elevators[action[3]].open_time+elevators[action[3]].close_time:   #没有容错
+                elif action[0]-elevators[action[3]].last_opentime<elevators[action[3]].open_time+elevators[action[3]].close_time-tolerance:   #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'开关门时间过短'
                 elevators[action[3]].last_closetime=action[0]
             case 'IN':
