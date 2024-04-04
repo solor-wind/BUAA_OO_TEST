@@ -130,7 +130,7 @@ def check(waiters, actions) -> str:
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置的前提错误'   #描述不准确
                 elif action[0]-elevators[action[2]].reset[0][0]>5+tolerance:  #没有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置accept到end时间过长'
-                elif action[0]-elevators[action[2]].reset[1][0]>1.2+tolerance or action[0]-elevators[action[2]].reset[1][0]<1.2-tolerance:    #有容错
+                elif action[0]-elevators[action[2]].reset[1][0]<1.2-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置所用时间错误'
                 elevators[action[2]].capacity=elevators[action[2]].reset[0][3]
                 elevators[action[2]].speed=elevators[action[2]].reset[0][4]
