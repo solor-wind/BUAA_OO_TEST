@@ -23,6 +23,6 @@
   "move_time": 0.4,
   "open_time": 0.2,
   "close_time": 0.2,
-  "max_capacity": 6,
+  "capacity": 6,
   "reset_prob": 0.1
 }
