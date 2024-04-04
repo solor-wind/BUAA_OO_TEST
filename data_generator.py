@@ -7,7 +7,6 @@ command_limit = config['command_limit']  # 一次输入的命令数量
 time_limit = config['time_limit']  # 时间限制
 reset_prob = config['reset_prob']  # 重置概率
 
-
 class DataGenerator:
     # 使用方法: 调用get_inputs()方法获取生成的数据, 调用dump_inputs(file_path)方法将数据写入文件
     def __init__(self):
@@ -53,7 +52,8 @@ class DataGenerator:
         self.time_list.sort()
 
     def generate_customerid_list(self):
-        self.customerId_list = random.sample(range(1, 150), self.input_num)  # 缺陷：只能生成1到150的乘客id
+        global command_limit
+        self.customerId_list = random.sample(range(1, command_limit + 100), self.input_num)  # 缺陷：只能生成1到150的乘客id
 
     def generate_request(self, index) -> str:
         customerId = self.customerId_list[index]
@@ -61,9 +61,19 @@ class DataGenerator:
         return f"[{self.time_list[index]}]{customerId}-FROM-{from_floor}-TO-{to_floor}"
 
     def get_inputs(self):
+        """
+        获取生成的数据
+        :return: 包含有输入数据的列表
+        """
+
         return self.inputs
 
     def dump_inputs(self, file_path):
+        """
+        将生成的数据写入文件
+        :param file_path: 输出文件路径
+        :return: 无
+        """
         target = Path(file_path)
         if not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)

@@ -1,18 +1,20 @@
 {
   "in_path": "input.exe",
-  "jar_path": "D:\\study\\OO\\project\\OO\\hw_5\\out\\artifacts\\hw_5_jar\\code.jar",
-  "input_path":"input.txt",
-  "output_path":"output.txt",
+  "jar_path": "D:\\code\\code\\OO\\Python\\BUAA_OO_TEST\\code.jar",
 
-  "deleteTempFile": true,
-  "set_clock": false,
+  "delete_temp_files": false,
+
+  "set_clock": true,
   "clock_time": 100,
+
+  "my_input" : false,
 
   "max_thread_num": 20,
 
-  "test_num": 100,
-  "time_limit": 15,
-  "command_limit": 20,
+  "test_num": 10,
+  "time_limit": 30,
+
+  "command_limit": 100,
   "fault_tolerance": 0.01,
   "elevator_num": 6,
   "default_floor": 1,
@@ -21,5 +23,6 @@
   "move_time": 0.4,
   "open_time": 0.2,
   "close_time": 0.2,
-  "max_capacity": 6
+  "max_capacity": 6,
+  "reset_prob": 0.1
 }
