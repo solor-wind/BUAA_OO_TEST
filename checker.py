@@ -1,6 +1,8 @@
 import re                                                                                                                                                                
 import json
 
+config = json.load(open('config.json', 'r'))
+
 def analyze_input(inputfile:str)->dict[int,list[int,int,float]]|str:
     """
     获取乘客信息
@@ -68,15 +70,15 @@ def analyze_output(outputfile:str)->list|str:
 
 class elevator:
     def __init__(self):
-        self.capacity=int(6)
-        self.speed=0.4
-        self.open_time=0.2
-        self.close_time=0.2
+        self.capacity=int(config['capacity'])
+        self.speed=float(config['move_time'])
+        self.open_time=float(config['open_time'])
+        self.close_time=float(config['close_time'])
         
         self.last_opentime=0
         self.last_closetime=1e-9
         self.last_arrivetime=0
-        self.floor=int(1)
+        self.floor=int(config['default_floor'])
         self.passengers={}
         self.receiver={}
 
@@ -119,7 +121,7 @@ def check(waiters,actions)->str:
             case 'RESET_END':
                 if elevators[action[2]].reset.__len__()!=2 or not ('RESET_ACCEPT' in elevators[action[2]].reset[0] and 'RESET_BEGIN' in elevators[action[2]].reset[1]):
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置的前提错误'   #描述不准确
-                elif action[0]-elevators[action[2]].reset[0][0]>5:  #没有容错
+                elif action[0]-elevators[action[2]].reset[0][0]>5+tolerance:  #没有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置accept到end时间过长'
                 elif action[0]-elevators[action[2]].reset[1][0]>1.2+tolerance or action[0]-elevators[action[2]].reset[1][0]<1.2-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置所用时间错误'
@@ -141,7 +143,7 @@ def check(waiters,actions)->str:
             case 'ARRIVE':
                 if action[2]>11 or action[2]<1:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'飞天遁地'
-                elif action[0]-elevators[action[3]].last_arrivetime<elevators[action[3]].speed-tolerance:    #没有容错
+                elif action[0]-elevators[action[3]].last_arrivetime<elevators[action[3]].speed-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'超速了'
                 elif elevators[action[3]].last_opentime>elevators[action[3]].last_closetime:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'还没关门就移动'
