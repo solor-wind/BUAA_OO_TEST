@@ -1,18 +1,18 @@
 {
   "in_path": "input.exe",
-  "jar_path": "D:\\code\\code\\OO\\Python\\BUAA_OO_TEST\\code.jar",
+  "jar_path": "D:\\study\\OO\\project\\OO\\hw_6\\out\\artifacts\\hw_6_jar\\hw_6.jar",
 
-  "delete_temp_files": false,
+  "delete_temp_files": true,
 
   "set_clock": true,
-  "clock_time": 100,
+  "clock_time": 120,
 
   "my_input" : false,
 
   "max_thread_num": 20,
 
-  "test_num": 10,
-  "time_limit": 30,
+  "test_num": 1000,
+  "time_limit": 50,
 
   "command_limit": 100,
   "fault_tolerance": 0.01,
