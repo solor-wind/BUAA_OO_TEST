@@ -2,7 +2,7 @@ import random
 import json
 from pathlib import Path
 
-config = json.load(open('config.json'))
+config = json.load(open('config.json','r',encoding='utf-8'))
 command_limit = config['command_limit']  # 一次输入的命令数量
 time_limit = config['time_limit']  # 时间限制
 reset_prob = config['reset_prob']  # 重置概率

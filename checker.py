@@ -1,10 +1,7 @@
 import re
 import json
 
-config = json.load(open('config.json', 'r'))
-
-config = json.load(open('config.json', 'r'))
-
+config = json.load(open('config.json', 'r', encoding='utf-8'))
 
 def analyze_input(inputfile: str) -> dict[int, list[int, int, float]] | str:
     """
