@@ -47,24 +47,28 @@ def analyze_output(outputfile: str) -> list | str:
     for i in range(len(lines)):
         line = lines[i]
         # 对此解析
-        # [ 4.6950]RESET_ACCEPT-1-8-0.3
+        # 不能反馈'[1.0]ARRIVE-1-2A'这种错误
         matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+).*', line)
         try:
             if matcher.group(2) in ['ARRIVE', 'OPEN', 'CLOSE', 'RECEIVE']:
-                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)', line)
+                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+(?:-A|-B)?)', line)
                 actions.append(
-                    [float(matcher.group(1)), matcher.group(2), int(matcher.group(3)), int(matcher.group(4))])
+                    [float(matcher.group(1)), matcher.group(2), int(matcher.group(3)), matcher.group(4)])
             elif matcher.group(2) in ['IN', 'OUT']:
-                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)-(\d+)', line)
+                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)-(\d+(?:-A|-B)?)', line)
                 actions.append([float(matcher.group(1)), matcher.group(2), int(matcher.group(3)), int(matcher.group(4)),
-                                int(matcher.group(5))])
+                                matcher.group(5)])
             elif matcher.group(2) == 'RESET_ACCEPT':
-                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)-(\d+\.\d+)', line)
-                actions.append([float(matcher.group(1)), matcher.group(2), int(matcher.group(3)), int(matcher.group(4)),
+                if line.count('-') == 3:
+                    matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)-(\d+\.\d+)', line)
+                    actions.append([float(matcher.group(1)), matcher.group(2), matcher.group(3), int(matcher.group(4)),
                                 float(matcher.group(5))])
+                else :
+                    matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)-(\d+)-(\d+)-(\d+\.\d+)', line)
+                    actions.append([float(matcher.group(1)), matcher.group(2), matcher.group(3),int(matcher.group(4)), int(matcher.group(5)),float(matcher.group(6))])
             elif matcher.group(2) in ['RESET_BEGIN', 'RESET_END']:
-                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+)', line)
-                actions.append([float(matcher.group(1)), matcher.group(2), int(matcher.group(3))])
+                matcher = re.match(r'\[\s*(\d+\.\d+)\]([A-Z_]+)-(\d+(?:-A|-B)?)', line)
+                actions.append([float(matcher.group(1)), matcher.group(2), matcher.group(3)])
             else:
                 return '第' + str(i + 1) + '行输出格式错误'
         except:
@@ -78,6 +82,7 @@ class elevator:
         self.speed=float(config['move_time'])
         self.open_time=float(config['open_time'])
         self.close_time=float(config['close_time'])
+        self.shared_floor=-1
         
         self.last_opentime=0
         self.last_closetime=1e-9
@@ -96,12 +101,24 @@ def check(waiters, actions) -> str:
     if type(actions) == str:
         return actions
 
-    elevators = [elevator() for i in range(7)]
+    elevators={}
+    for i in range(1,7):
+        elevators[str(i)]=elevator()
     received_waiters = {}
     tolerance = 0.02
 
     for i in range(0, len(actions)):
         action = actions[i]
+        tmp_id = ''
+        match action[1]:
+            case 'RESET_ACCEPT'|'RESET_BEGIN'|'RESET_END':
+                tmp_id=action[2]
+            case 'RECEIVE'|'ARRIVE'|'OPEN'|'CLOSE':
+                tmp_id=action[3]
+            case 'IN'|'OUT':
+                tmp_id=action[4]
+        if tmp_id not in elevators.keys():
+            return '第' + str(i + 1) + '行电梯' + tmp_id + '不存在'
         match action[1]:
             case 'RESET_ACCEPT':
                 if elevators[action[2]].reset != []:
@@ -129,10 +146,20 @@ def check(waiters, actions) -> str:
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置accept到end时间过长'
                 elif action[0]-elevators[action[2]].reset[1][0]<1.2-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[2])+'重置所用时间错误'
-                elevators[action[2]].capacity=elevators[action[2]].reset[0][3]
-                elevators[action[2]].speed=elevators[action[2]].reset[0][4]
-                elevators[action[2]].reset=[]
                 elevators[action[2]].reset_floor=0
+                if elevators[action[2]].reset[0].__len__() == 5: #normal
+                    elevators[action[2]].capacity=elevators[action[2]].reset[0][3]
+                    elevators[action[2]].speed=elevators[action[2]].reset[0][4]
+                    elevators[action[2]].reset=[]
+                else:   #double
+                    elevators[action[2]+'-A']=elevator()
+                    elevators[action[2]+'-B']=elevator()
+                    elevators[action[2]+'-A'].shared_floor=elevators[action[2]+'-B'].shared_floor=elevators[action[2]].reset[0][3]
+                    elevators[action[2]+'-A'].capacity=elevators[action[2]+'-B'].capacity=elevators[action[2]].reset[0][4]
+                    elevators[action[2]+'-A'].speed=elevators[action[2]+'-B'].speed=elevators[action[2]].reset[0][5]
+                    elevators[action[2]+'-A'].floor=elevators[action[2]+'-A'].shared_floor-1
+                    elevators[action[2]+'-B'].floor=elevators[action[2]+'-B'].shared_floor+1
+                    elevators.pop(action[2])
             case 'RECEIVE':
                 # 同一乘客被分配到多个电梯、多次输出receive
                 if action[2] in received_waiters.keys():
@@ -147,16 +174,30 @@ def check(waiters, actions) -> str:
             case 'ARRIVE':
                 if action[2]>11 or action[2]<1:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'飞天遁地'
+                elif elevators[action[3]].floor==action[2]:
+                    return '第'+str(i+1)+'行电梯'+str(action[3])+'到达楼层与上次到达楼层相同'
+                elif (action[3].count('A')==1 and action[2]>elevators[action[3]].shared_floor) or \
+                        (action[3].count('B')==1 and action[2]<elevators[action[3]].shared_floor):
+                    return '第'+str(i+1)+'行电梯'+action[3]+'超过了换乘楼层'
                 elif action[0]-elevators[action[3]].last_arrivetime<elevators[action[3]].speed-tolerance:    #有容错
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'超速了'
                 elif elevators[action[3]].last_opentime>elevators[action[3]].last_closetime:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'还没关门就移动'
                 elif elevators[action[3]].passengers==[] and elevators[action[3]].receiver=={}:
-                    return '第'+str(i+1)+'行电梯'+str(action[3])+'没人就移动'
+                    if action[3].count('-')>0 and elevators[action[3]].floor==elevators[action[3]].shared_floor:
+                        pass
+                    else:
+                        return '第'+str(i+1)+'行电梯'+str(action[3])+'没人就移动'
                 elif elevators[action[3]].reset.__len__()==2:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'重置期间禁止移动'
                 elif abs(elevators[action[3]].floor-action[2])!=1:
                     return '第'+str(i+1)+'行电梯'+str(action[3])+'移动超过1层'
+                elif action[3].count('A')==1 and elevators[action[3]].shared_floor==action[2] \
+                        and elevators[action[3].replace('A','B')].floor==action[2]:
+                    return '第'+str(i+1)+'行电梯'+str(action[3])+'撞梯了'
+                elif action[3].count('B')==1 and elevators[action[3]].shared_floor==action[2] \
+                        and elevators[action[3].replace('B','A')].floor==action[2]:
+                    return '第'+str(i+1)+'行电梯'+str(action[3])+'撞梯了'
                 elevators[action[3]].floor=action[2]
                 elevators[action[3]].last_arrivetime=action[0]
                 elevators[action[3]].reset_floor+=1
@@ -210,13 +251,13 @@ def check(waiters, actions) -> str:
                 elevators[action[4]].receiver.pop(action[2])
                 received_waiters.pop(action[2])
                 elevators[action[4]].passengers.pop(action[2])
-    for i in range(1, len(elevators)):
-        if elevators[i].reset != []:
-            return '电梯' + str(i) + '还未结束重置'
-        if elevators[i].passengers != {}:
-            return '电梯' + str(i) + '还有乘客'
-        if elevators[i].last_opentime > elevators[i].last_closetime:
-            return '电梯' + str(i) + '还没关门'
+    for i in elevators.items():
+        if i[1].reset != []:
+            return '电梯' + i[0] + '还未结束重置'
+        if i[1].passengers != {}:
+            return '电梯' + i[0] + '还有乘客'
+        if i[1].last_opentime > i[1].last_closetime:
+            return '电梯' + i[0] + '还没关门'
     if waiters != {}:
         return '还有乘客没送完'
     return 'Accepted!'
