@@ -261,3 +261,8 @@ def check(waiters, actions) -> str:
     if waiters != {}:
         return '还有乘客没送完'
     return 'Accepted!'
+
+if __name__ == '__main__':
+    input = analyze_input('stdin.txt')
+    output = analyze_output('output.txt')
+    print(check(input, output))
