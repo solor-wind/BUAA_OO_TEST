@@ -21,9 +21,9 @@ pip install func_timeout
 
 ## 检测指定的输入输出
 
-确保 `congfig.json, checker.py, stdin.txt, ouput.txt, test.py` 在同一目录下
+确保 `congfig.json, checker.py, stdin.txt, ouput.txt, checker.py` 在同一目录下
 
-将输入、输出分别填写到 `stdin.txt` 和 `output.txt` 中，运行 `test.py` 即可
+将输入、输出分别填写到 `stdin.txt` 和 `output.txt` 中，运行 `checker.py` 即可
 
 ## 相关信息
 
