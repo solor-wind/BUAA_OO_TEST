@@ -16,7 +16,7 @@ data_loader：读取数据，用于测试。
 pip install func_timeout
 ```
 
-具体运行设置参考config,json
+具体运行设置参考config,json  
 **注意：jar_path需要填写绝对地址**
 
 ## 检测指定的输入输出

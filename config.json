@@ -1,6 +1,6 @@
 {
   "in_path": "input.exe",
-  "jar_path": "D:\\study\\OO\\project\\OO\\hw_6\\out\\artifacts\\hw_6_jar\\hw_6.jar",
+  "jar_path": "D:\\code\\code\\OO\\Python\\BUAA_OO_TEST\\code.jar",
 
   "delete_temp_files": true,
 
@@ -11,10 +11,10 @@
 
   "max_thread_num": 20,
 
-  "test_num": 1000,
-  "time_limit": 50,
+  "test_num": 10,
+  "time_limit": 20,
 
-  "command_limit": 100,
+  "command_limit": 20,
   "fault_tolerance": 0.01,
   "elevator_num": 6,
   "default_floor": 1,
@@ -24,5 +24,6 @@
   "open_time": 0.2,
   "close_time": 0.2,
   "capacity": 6,
-  "reset_prob": 0.1
+  "reset_prob": 0.1,
+  "DC_reset_prob": 0.3
 }

@@ -6,6 +6,7 @@ config = json.load(open('config.json','r',encoding='utf-8'))
 command_limit = config['command_limit']  # 一次输入的命令数量
 time_limit = config['time_limit']  # 时间限制
 reset_prob = config['reset_prob']  # 重置概率
+DC_reset_prob = config['DC_reset_prob']  # 在发生重置的前提下，重置类型为第二类重置的概率
 
 class DataGenerator:
     # 使用方法: 调用get_inputs()方法获取生成的数据, 调用dump_inputs(file_path)方法将数据写入文件
@@ -16,35 +17,51 @@ class DataGenerator:
         self.time_list = []
         self.customerId_list = []
         self.inputs = []
+        self.normalElevatorId = [1, 2, 3, 4, 5, 6]
         self.generate_data()
 
     def generate_data(self):
-        global time_limit, reset_prob
+        global time_limit, reset_prob, DC_reset_prob
         self.generate_time_list()
         self.generate_customerid_list()
         for i in range(self.input_num):
             if random.random() < reset_prob:
-                temp_elevator_id_list = [1, 2, 3, 4, 5, 6]
+                is_DC_reset = random.random() < DC_reset_prob
+                temp_elevator_id_list = self.normalElevatorId.copy()
                 while True:
-                    index = random.choice(range(0, len(temp_elevator_id_list)))
+                    if len(temp_elevator_id_list) == 0:
+                        self.inputs.append(self.generate_request(i))
+                        break
+                    else:
+                        index = random.choice(range(0, len(temp_elevator_id_list)))
                     elevator_id = temp_elevator_id_list.pop(index)
-                    if self.time_list[i] - self.last_reset_time[elevator_id - 1] < 3:  # 如果与上一次重置的间隔小于3s
+                    if self.time_list[i] - self.last_reset_time[elevator_id - 1] < 4:  # 如果与上一次重置的间隔小于4s
                         if len(temp_elevator_id_list) == 0:
                             self.inputs.append(self.generate_request(i))
                             break
                         else:
                             continue
                     else:
-                        self.inputs.append(self.generate_reset(elevator_id, i))
+                        if is_DC_reset:
+                            self.inputs.append(self.generate_double_car_request(elevator_id, i))
+                            self.normalElevatorId.remove(elevator_id)
+                        else:
+                            self.inputs.append(self.generate_normal_reset(elevator_id, i))
                         self.last_reset_time[elevator_id - 1] = self.time_list[i]
                         break
             else:
                 self.inputs.append(self.generate_request(i))
 
-    def generate_reset(self, elevatorId, index) -> str:
+    def generate_normal_reset(self, elevatorId, index) -> str:
         capacity = random.randint(3, 8)
         move_time = random.choice([0.2, 0.3, 0.4, 0.5, 0.6])
         return f"[{self.time_list[index]}]RESET-Elevator-{elevatorId}-{capacity}-{move_time}"
+
+    def generate_double_car_request(self, elevatorId, index) -> str:
+        capacity = random.randint(3, 8)
+        move_time = random.choice([0.2, 0.3, 0.4, 0.5, 0.6])
+        transfer_floor = random.randint(3, 9)
+        return f"[{self.time_list[index]}]RESET-DCElevator-{elevatorId}-{transfer_floor}-{capacity}-{move_time}"
 
     def generate_time_list(self):
         global time_limit
