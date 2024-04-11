@@ -256,9 +256,11 @@ def check(waiters, actions) -> str:
             return '电梯' + i[0] + '还未结束重置'
         if i[1].passengers != {}:
             return '电梯' + i[0] + '还有乘客'
+        if i[1].receiver !={}:
+            return '电梯' + i[0] + '还有没送的乘客'
         if i[1].last_opentime > i[1].last_closetime:
             return '电梯' + i[0] + '还没关门'
-    if waiters != {}:
+    if waiters != {} or received_waiters !={}:
         return '还有乘客没送完'
     return 'Accepted!'
 
