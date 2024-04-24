@@ -153,7 +153,7 @@ class Checker:
                 self.rnfId2Num[id2] = 1
             return f"rnf-{self.exception['rnf']}, {id1}-{self.rnfId2Num[id1]}, {id2}-{self.rnfId2Num[id2]}"
         else:
-            if self.graph[id1][id2]['weight'] + int(order[3]) < 0:
+            if self.graph[id1][id2]['weight'] + int(order[3]) <= 0:
                 self.graph.remove_edge(id1, id2)
             else:
                 self.graph[id1][id2]['weight'] += int(order[3])
