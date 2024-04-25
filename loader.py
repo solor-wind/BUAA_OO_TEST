@@ -26,5 +26,5 @@ def load_output_to_file(file_path) -> None:
     path = Path(file_path)
     if not path.parent.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-    command = f"type {path.parent.__str__() + "\\input.txt"} | java -jar {jar_path} > {file_path}"
+    command = "type " + path.parent.__str__() + "\\input.txt" + " | java -jar " + jar_path + " > " + file_path
     subprocess.run(command, shell=True)
