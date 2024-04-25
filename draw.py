@@ -47,6 +47,15 @@ def draw_graph(input_path, input_index=0):
     # 显示图形
     fig.show()
 
+    while True:
+        order = input("请输入要查询位置的节点编号(输入exit退出)：")
+        if order == "exit":
+            break
+        if order not in node_labels:
+            print("节点不存在")
+            continue
+        node_index = node_labels.index(order)
+        print(f"节点{order}的坐标为({node_x[node_index]},{node_y[node_index]})")
 
 if __name__ == '__main__':
-    draw_graph("input.txt", 12)
+    draw_graph("input.txt", 0)
