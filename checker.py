@@ -239,7 +239,6 @@ class Checker:
         for i in range(num):
             self.id2Person[int(id_list[i])] = Person(int(id_list[i]), name_list[i], int(age_list[i]))
             self.graph.add_node(int(id_list[i]))
-            self.graph.add_edge(int(id_list[i]), int(id_list[i]), weight=0)
         for i in range(0, num):
             weights = inputs[input_index + 3 + i].split()
             id1 = int(id_list[i])
