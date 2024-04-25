@@ -210,7 +210,7 @@ class Checker:
                 self.pinfId2Num[id2] = 1
             return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
         else:
-            if self.graph.has_edge(id1, id2):
+            if nx.has_path(self.graph, id1, id2):
                 return "true"
             else:
                 return "false"
