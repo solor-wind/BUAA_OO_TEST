@@ -28,7 +28,7 @@ def generate_data(input_file:str)->None:
             str_mr.append('mr '+str(edge.start)+' '+str(edge.end)+' '+str(random.randint(-200,200)))   
     #遍历集合node
     for i in node:
-        str_node.append('ap '+str(i)+' OO'+str(i)+str(random.randint(1,100)))
+        str_node.append('ap '+str(i)+' OO'+str(i)+' '+str(random.randint(1,100)))
     ans.extend(str_node)
     ans.extend(str_edge)
     ans.extend(str_mr)
@@ -64,4 +64,4 @@ def generate_data(input_file:str)->None:
             f.write(i+'\n')
 
 if __name__ == "__main__":
-    generate_data('test.in')
+    generate_data('input.txt')
