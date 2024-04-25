@@ -4,7 +4,7 @@ from person import Person
 
 
 class Checker:
-    def __init__(self, in_path, out_path = None):
+    def __init__(self, in_path, out_path=None):
         """
         初始化Checker类
         :param in_path: 输入文件路径
@@ -21,7 +21,7 @@ class Checker:
         self.erId2Num = {}
         self.graph = nx.Graph()
 
-    def check(self, check_output = True) -> str:
+    def check(self, check_output=True) -> str:
         """
         检查输入输出文件是否符合要求
         :param check_output: 是否检查输出文件
@@ -33,7 +33,7 @@ class Checker:
             order = self.inputs[input_index].split()
             if order[0] != 'load_network' and order[0] != 'ln':
                 if check_output and output_index == len(self.outputs):
-                    return f"输出文件行数过少，第{output_index - 1}行后输出缺失"
+                    return f"输出文件行数过少，输入第{input_index + 1}行，输出第{output_index}行后缺失"
                 if order[0] == 'add_person' or order[0] == 'ap':
                     check_func = self.check_add_person
                 elif order[0] == 'add_relation' or order[0] == 'ar':
