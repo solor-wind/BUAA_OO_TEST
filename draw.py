@@ -57,5 +57,6 @@ def draw_graph(input_path, input_index=0):
         node_index = node_labels.index(order)
         print(f"节点{order}的坐标为({node_x[node_index]},{node_y[node_index]})")
 
+
 if __name__ == '__main__':
     draw_graph("input.txt", 0)

@@ -1,6 +1,6 @@
 import networkx as nx
-from bin.loader import file_load
-from bin.person import Person
+from loader import file_load
+from person import Person
 
 
 class Checker:

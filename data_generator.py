@@ -2,6 +2,7 @@ import random
 import numpy as np
 import json
 from cyaron import Graph
+from pathlib import Path
 
 config = json.load(open('config.json'))
 
@@ -60,8 +61,11 @@ def generate_data(input_file:str)->None:
         command_num-=1
 
     with open(input_file,'w') as f:
+        path = Path(input_file)
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
         for i in ans:
-            f.write(i+'\n')
+            f.write(i + "\n")
 
 if __name__ == "__main__":
     generate_data('input.txt')

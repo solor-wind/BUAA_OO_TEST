@@ -4,6 +4,10 @@
 pip install networkx
 pip install cyaron
 ```
+若要使用计时功能，需要安装func_timeout库，可通过以下命令安装：  
+```bash
+pip install func_timeout
+```
 
 ## 绘图功能使用说明  
 ### 前置条件  

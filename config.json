@@ -1,5 +1,12 @@
 {
+    "test_num": 5,
+
     "command_limit":1000,
+    "jar_path": "myJar.jar",
+
+    "del_temp_file" : true,
+    "set_clock" : true,
+    "clock_time" : 7.0,
 
     "node_limit": 100,
     "edge_limit": 1000,
