@@ -1,0 +1,7 @@
+{
+    "command_limit":1000,
+
+    "node_limit": 100,
+    "edge_limit": 1000,
+    "load_prob": 0.5
+}
