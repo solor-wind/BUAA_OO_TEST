@@ -3,14 +3,14 @@ from checker import Checker
 import plotly.graph_objects as go
 
 
-def draw_graph(input_index = 0):
+def draw_graph(input_path, input_index=0):
     """
     截至至input_index的图形,绘制input.txt对应的图形（如果不指定行数，则绘制整个input.txt） /
-    请确保input_index之前你的output.txt为正确
-    :param input_index:
+    :param input_path: 输入文件路径
+    :param input_index: 截至行数
     :return:
     """
-    checker = Checker("input.txt")
+    checker = Checker(input_path)
     if input_index == 0:
         input_index = len(checker.inputs)
     graph = checker.generate_graph(input_index)
@@ -47,5 +47,6 @@ def draw_graph(input_index = 0):
     # 显示图形
     fig.show()
 
+
 if __name__ == '__main__':
-    draw_graph(0)
+    draw_graph("input.txt", 12)
