@@ -1,17 +1,18 @@
 import networkx as nx
-from loader import file_load
-from person import Person
+from bin.loader import file_load
+from bin.person import Person
 
 
 class Checker:
-    def __init__(self, in_path, out_path):
+    def __init__(self, in_path, out_path = None):
         """
         初始化Checker类
         :param in_path: 输入文件路径
         :param out_path: 输出文件路径
         """
         self.inputs = file_load(in_path)
-        self.outputs = file_load(out_path)
+        if out_path is not None:
+            self.outputs = file_load(out_path)
         self.exception = {"pinf": 0, "epi": 0, "rnf": 0, "er": 0}
         self.id2Person = {}
         self.pinfId2Num = {}
@@ -20,9 +21,10 @@ class Checker:
         self.erId2Num = {}
         self.graph = nx.Graph()
 
-    def check(self) -> str:
+    def check(self, check_output = True) -> str:
         """
         检查输入输出文件是否符合要求
+        :param check_output: 是否检查输出文件
         :return: 描述检查结果的字符串
         """
         input_index = 0
@@ -30,7 +32,7 @@ class Checker:
         while input_index < len(self.inputs):
             order = self.inputs[input_index].split()
             if order[0] != 'load_network' and order[0] != 'ln':
-                if output_index == len(self.outputs):
+                if check_output and output_index == len(self.outputs):
                     return f"输出文件行数过少，第{output_index - 1}行后输出缺失"
                 if order[0] == 'add_person' or order[0] == 'ap':
                     check_func = self.check_add_person
@@ -51,19 +53,21 @@ class Checker:
                 else:
                     return f"第{input_index + 1}行输入格式错误"
                 ans = check_func(order)
-                if self.outputs[output_index].strip() != ans:
+                if check_output and self.outputs[output_index].strip() != ans:
                     return f"输入第{input_index + 1}行\t输出第{output_index + 1}行错误\t正确结果应为{ans}"
                 input_index += 1
             else:
                 if order[0] == 'load_network' or order[0] == 'ln':
                     ans = self.check_load_network(order, self.inputs, input_index)
-                    if self.outputs[output_index].strip() != ans:
+                    if check_output and self.outputs[output_index].strip() != ans:
                         return f"输入第{input_index + 1}行\t输出第{output_index + 1}行错误\t正确结果应为{ans}"
                     input_index += 3 + int(order[1])
-            output_index += 1
-        if output_index != len(self.outputs):
+            if check_output:
+                output_index += 1
+        if check_output and output_index != len(self.outputs):
             return f"输出文件行数过多，应为{output_index}行"
-        return "Accepted!"
+        if check_output:
+            return "Accepted!"
 
     def check_add_person(self, order) -> str:
         id = int(order[1])
@@ -76,7 +80,6 @@ class Checker:
             return f"epi-{self.exception['epi']}, {order[1]}-{self.epiId2Num[id]}"
         else:
             self.graph.add_node(id)
-            self.graph.add_edge(id, id, weight=0)
             self.id2Person[id] = Person(int(order[1]), order[2], int(order[3]))
             return "Ok"
 
@@ -97,7 +100,7 @@ class Checker:
             else:
                 self.pinfId2Num[id2] = 1
             return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
-        elif self.graph.has_edge(id1, id2):
+        elif self.graph.has_edge(id1, id2) or id1 == id2:
             id1 = min(int(order[1]), int(order[2]))
             id2 = max(int(order[1]), int(order[2]))
             self.exception["er"] += 1
@@ -176,7 +179,7 @@ class Checker:
             else:
                 self.pinfId2Num[id2] = 1
             return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
-        elif not self.graph.has_edge(id1, id2):
+        elif not self.graph.has_edge(id1, id2) and id1 != id2:
             id1 = min(int(order[1]), int(order[2]))
             id2 = max(int(order[1]), int(order[2]))
             self.exception["rnf"] += 1
@@ -189,6 +192,8 @@ class Checker:
             else:
                 self.rnfId2Num[id2] = 1
             return f"rnf-{self.exception['rnf']}, {id1}-{self.rnfId2Num[id1]}, {id2}-{self.rnfId2Num[id2]}"
+        elif id1 == id2:
+            return "0"
         else:
             return str(self.graph[id1][id2]['weight'])
 
@@ -210,7 +215,7 @@ class Checker:
                 self.pinfId2Num[id2] = 1
             return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
         else:
-            if self.graph.has_edge(id1, id2):
+            if nx.has_path(self.graph, id1, id2):
                 return "true"
             else:
                 return "false"
@@ -243,6 +248,16 @@ class Checker:
                 if weights[j] != '0':
                     self.graph.add_edge(id1, id2, weight=int(weights[j]))
         return "Ok"
+
+    def generate_graph(self, input_index) -> nx.Graph:
+        """
+        生成图，需要保证1~input_index行不出现指令格式错误
+        :param input_index: 截至到input_index行，生成图
+        :return: 生成的图
+        """
+        self.inputs = self.inputs[:input_index]
+        self.check(False)
+        return self.graph
 
 
 if __name__ == '__main__':
