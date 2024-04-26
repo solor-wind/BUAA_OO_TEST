@@ -224,12 +224,7 @@ class Checker:
         return str(nx.number_connected_components(self.graph))
 
     def check_query_triple_sum(self, order) -> str:
-        cliques = nx.enumerate_all_cliques(self.graph)
-        count = 0
-        for clique in cliques:
-            if len(clique) == 3:
-                count += 1
-        return str(count)
+        return str(sum(nx.triangles(self.graph).values()) // 3)
 
     def check_load_network(self, order, inputs, input_index) -> str:
         num = int(order[1])
