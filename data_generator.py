@@ -10,12 +10,9 @@ def generate_data(input_file:str)->None:
     """
     传入文件路径，将生成的数据写入文件
     相关参数在config.json中配置
-    command_limit为每次个样例的指令数上限
-    node_limit为图的节点数上限
-    load_prob为load_network的出现概率
     """
     command_num=random.randint(1,int(config['command_limit']))
-    node_num1 = random.randint(1, int(config['node_limit']))#所有节点数
+    node_num1 = random.randint(2, int(config['node_limit']))#所有节点数
     node_num2=node_num1#稠密图节点数
     edge_num=int(0)
     if node_num1*(node_num1-1)/2<command_num/4:

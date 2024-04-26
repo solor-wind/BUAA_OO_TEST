@@ -23,3 +23,10 @@ pip install scipy
 
 ## 检验正确性功能使用说明
 在check.py中，修改264行的参数为你的input,output文件路径，运行check.py即可。
+
+## 数据生成使用说明
+`command_limit` 为每次个样例的指令数上限
+
+`node_limit` 为图的节点数上限
+
+`load_prob` 为load_network的出现概率
