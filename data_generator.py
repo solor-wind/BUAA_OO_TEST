@@ -17,7 +17,7 @@ def generate_data(input_file:str)->None:
     edge_num=int(0)
     if node_num1*(node_num1-1)/2<command_num/4:
         node_num2=node_num1
-        edge_num=random.randint(int(node_num2*(node_num2-1)/6),int(node_num2*(node_num2-1)/2))
+        edge_num=random.randint(max(1,int(node_num2*(node_num2-1)/6)),int(node_num2*(node_num2-1)/2))
     else:
         edge_num=int(command_num/4)
         node_num2=random.randint(int((edge_num*2)**0.5),node_num1)
