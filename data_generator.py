@@ -11,7 +11,7 @@ def generate_data(input_file:str)->None:
     传入文件路径，将生成的数据写入文件
     相关参数在config.json中配置
     """
-    command_num=random.randint(1,int(config['command_limit']))
+    command_num=random.randint(4,int(config['command_limit']))
     node_num1 = random.randint(2, int(config['node_limit']))#所有节点数
     node_num2=node_num1#稠密图节点数
     edge_num=int(0)
