@@ -10,12 +10,21 @@ def generate_data(input_file:str)->None:
     """
     传入文件路径，将生成的数据写入文件
     相关参数在config.json中配置
+    command_limit为每次个样例的指令数上限
+    node_limit为图的节点数上限
+    load_prob为load_network的出现概率
     """
-    node_num=edge_num=command_num=random.randint(1,int(config['command_limit']))
-    while node_num+edge_num>=command_num/3*2 and node_num+edge_num<=command_num/3:
-        node_num=random.randint(1,int(config['node_limit']))
-        edge_num=random.randint(node_num-1,node_num*(node_num-1)/2)
-    graph=Graph.graph(node_num,edge_num,weight_limit=(1,200))
+    command_num=random.randint(1,int(config['command_limit']))
+    node_num1 = random.randint(1, int(config['node_limit']))#所有节点数
+    node_num2=node_num1#稠密图节点数
+    edge_num=int(0)
+    if node_num1*(node_num1-1)/2<command_num/4:
+        node_num2=node_num1
+        edge_num=random.randint(int(node_num2*(node_num2-1)/6),int(node_num2*(node_num2-1)/2))
+    else:
+        edge_num=int(command_num/4)
+        node_num2=random.randint(int((edge_num*2)**0.5),node_num1)
+    graph=Graph.graph(node_num2,edge_num,weight_limit=(1,200))
     node=set()
     str_node=[]
     str_edge=[]
@@ -38,6 +47,11 @@ def generate_data(input_file:str)->None:
     str_edge.extend(str_mr)
     random.shuffle(str_edge)
     ans.extend(str_edge)
+    for i in range(node_num2,node_num1+1):
+        ans.insert(random.randint(0,ans.__len__()-1),'ap '+str(i)+' OO'+str(i)+' '+str(random.randint(1,100)))
+
+    command_num-=ans.__len__()
+
 
     while command_num>0:
         prob=random.random()
@@ -58,6 +72,35 @@ def generate_data(input_file:str)->None:
             ans.insert(random.randint(0,ans.__len__()-1),'qbs')
         else:
             ans.insert(random.randint(0,ans.__len__()-1),'qts')
+        command_num-=1
+
+    if random.random()<config['load_prob']:
+        node_num3=node_num1
+        if node_num1>300:
+            node_num3=random.randint(1,300)
+        edge_num3=random.randint(int(node_num3*(node_num3-1)/10),int(node_num3*(node_num3-1)/2))
+        graph=Graph.graph(node_num1,edge_num3,weight_limit=(1,200))
+        ans2=[]
+        ans2.append('ln '+str(node_num3))
+        for i in range(3):
+            tmp_node=''
+            for j in range(1,node_num3+1):
+                tmp_node+=str(j)+' '
+            ans2.append(tmp_node)
+        for i in range(2,node_num3+1):
+            tmp_edge=''
+            for j in range(1,i):
+                if random.random()<float(edge_num3)/(node_num3*(node_num3-1)/2):
+                    tmp_edge+=str(random.randint(1,200))+' '
+                else:
+                    tmp_edge+='0 '
+                # if graph.edges[j].count(i)>0:
+                #     tmp_edge+=str(graph.edges[j][i].weight)+' '
+                # else:
+                #     tmp_edge+='0 '
+            ans2.append(tmp_edge)
+        ans2.extend(ans)
+        ans=ans2
         command_num-=1
 
     with open(input_file,'w') as f:
