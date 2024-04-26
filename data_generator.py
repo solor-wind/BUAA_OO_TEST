@@ -31,8 +31,10 @@ def generate_data(input_file:str)->None:
     for edge in graph.iterate_edges():
         node.add(edge.start)
         str_edge.append('ar '+str(edge.start)+' '+str(edge.end)+' '+str(edge.weight)) 
-        if random.random()<0.5:
-            str_mr.append('mr '+str(edge.start)+' '+str(edge.end)+' '+str(random.randint(-200,200)))   
+        if random.random()<0.4:
+            str_mr.append('mr '+str(edge.start)+' '+str(edge.end)+' '+str(random.randint(-200,100)))
+        else:
+            str_edge.append('ar ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(-200, 200)))
     #遍历集合node
     for i in node:
         str_node.append('ap '+str(i)+' OO'+str(i)+' '+str(random.randint(1,100)))
