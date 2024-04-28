@@ -4,7 +4,7 @@ import json
 from cyaron import Graph
 from pathlib import Path
 
-config = json.load(open('config.json'))
+config = json.load(open('config.json',encoding='utf-8'))
 
 def generate_data(input_file:str)->None:
     """
@@ -34,7 +34,7 @@ def generate_data(input_file:str)->None:
         if random.random()<0.4:
             str_mr.append('mr '+str(edge.start)+' '+str(edge.end)+' '+str(random.randint(-200,100)))
         else:
-            str_edge.append('ar ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(-200, 200)))
+            str_edge.append('ar ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(1,node_num1)) + ' ' + str(random.randint(1, 200)))
     #遍历集合node
     for i in node:
         str_node.append('ap '+str(i)+' OO'+str(i)+' '+str(random.randint(1,100)))
