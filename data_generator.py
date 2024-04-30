@@ -164,9 +164,9 @@ def generate_data(input_file: str) -> None:
         elif prob < 0.8:  # qsp
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1),
-                           'qba ' + str(np.random.choice(node)) + ' ' + str(np.random.choice(node)))
+                           'qsp ' + str(np.random.choice(node)) + ' ' + str(np.random.choice(node)))
             else:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qba ' + str(get_int()) + ' ' + str(get_int()))
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qsp ' + str(get_int()) + ' ' + str(get_int()))
         elif prob < 0.9:  # qtvs
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1),
