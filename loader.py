@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-config = json.load(open('config.json'))
+config = json.load(open('config.json',encoding='utf-8'))
 jar_path = config['jar_path']
 
 
