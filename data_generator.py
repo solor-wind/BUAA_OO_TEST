@@ -183,13 +183,13 @@ def generate_data(input_file: str) -> None:
 
     # 最后生成load_network(3.5/3)
     if isload < config['load_prob']:
-        load_node_num = random.randint(1, min(100, node_num))
+        load_node_num = random.randint(1, min(100, node_num, node.__len__()))
         load_edge_num = random.randint(int(load_node_num * (load_node_num - 1) / 20),
                                        int(load_node_num * (load_node_num - 1) / 2))
 
         ans2 = []
         ans2.append('ln ' + str(load_node_num))
-        load_node = np.random.choice(node, load_node_num)
+        load_node = random.sample(node, load_node_num)
 
         str_load_node = ''
         for i in range(0, load_node_num):
