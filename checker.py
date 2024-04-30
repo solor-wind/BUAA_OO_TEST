@@ -1,6 +1,7 @@
 import networkx as nx
 from loader import file_load
 from person import Person
+from tag import Tag
 
 
 class Checker:
@@ -13,12 +14,16 @@ class Checker:
         self.inputs = file_load(in_path)
         if out_path is not None:
             self.outputs = file_load(out_path)
-        self.exception = {"pinf": 0, "epi": 0, "rnf": 0, "er": 0}
+        self.exception = {"pinf": 0, "epi": 0, "rnf": 0, "er": 0, "anf": 0, "eti": 0, "pnf": 0, "tinf": 0}
         self.id2Person = {}
         self.pinfId2Num = {}
         self.epiId2Num = {}
         self.rnfId2Num = {}
         self.erId2Num = {}
+        self.anfId2Num = {}
+        self.etiId2Num = {}
+        self.pnfId2Num = {}
+        self.tinfId2Num = {}
         self.graph = nx.Graph()
 
     def check(self, check_output=True) -> str:
@@ -50,6 +55,24 @@ class Checker:
                     check_func = self.check_query_triple_sum
                 elif order[0] == 'load_network' or order[0] == 'ln':
                     check_func = self.check_load_network
+                elif order[0] == 'add_tag' or order[0] == 'at':
+                    check_func = self.check_add_tag
+                elif order[0] == 'del_tag' or order[0] == 'dt':
+                    check_func = self.check_del_tag
+                elif order[0] == 'add_to_tag' or order[0] == 'att':
+                    check_func = self.check_add_to_tag
+                elif order[0] == 'del_from_tag' or order[0] == 'dft':
+                    check_func = self.check_del_from_tag
+                elif order[0] == 'query_tag_value_sum' or order[0] == 'qtvs':
+                    check_func = self.check_query_tag_value_sum
+                elif order[0] == 'query_tag_age_var' or order[0] == 'qtav':
+                    check_func = self.check_query_tag_age_var
+                elif order[0] == 'query_best_acquaintance' or order[0] == 'qba':
+                    check_func = self.check_query_best_acquaintance
+                elif order[0] == 'query_couple_sum' or order[0] == 'qcs':
+                    check_func = self.check_query_couple_sum
+                elif order[0] == 'query_shortest_path' or order[0] == 'qsp':
+                    check_func = self.check_query_shortest_path
                 else:
                     return f"第{input_index + 1}行输入格式错误"
                 ans = check_func(order)
@@ -242,6 +265,254 @@ class Checker:
                 if weights[j] != '0':
                     self.graph.add_edge(id1, id2, weight=int(weights[j]))
         return "Ok"
+
+    def check_add_tag(self, order) -> str:
+        id1 = int(order[1])
+        tag_id = int(order[2])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        person1 = self.id2Person[id1]
+        if tag_id in person1.tags.keys():
+            self.exception["eti"] += 1
+            if tag_id in self.etiId2Num.keys():
+                self.etiId2Num[tag_id] += 1
+            else:
+                self.etiId2Num[tag_id] = 1
+            return f"eti-{self.exception['eti']}, {tag_id}-{self.etiId2Num[tag_id]}"
+        person1.add_tag(Tag(tag_id))
+        return "Ok"
+
+    def check_del_tag(self, order) -> str:
+        id1 = int(order[1])
+        tag_id = int(order[2])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        person1 = self.id2Person[id1]
+        if tag_id not in person1.tags.keys():
+            self.exception["tinf"] += 1
+            if tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[tag_id] += 1
+            else:
+                self.tinfId2Num[tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {tag_id}-{self.tinfId2Num[tag_id]}"
+        person1.del_tag(tag_id)
+        return "Ok"
+
+    def check_add_to_tag(self, order) -> str:
+        id1 = int(order[1])
+        id2 = int(order[2])
+        tag_id = int(order[3])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif id2 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id2 in self.pinfId2Num.keys():
+                self.pinfId2Num[id2] += 1
+            else:
+                self.pinfId2Num[id2] = 1
+            return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
+        elif id1 == id2:
+            self.exception["epi"] += 1
+            if id1 in self.epiId2Num.keys():
+                self.epiId2Num[id1] += 1
+            else:
+                self.epiId2Num[id1] = 1
+            return f"epi-{self.exception['epi']}, {id1}-{self.epiId2Num[id1]}"
+        elif not nx.has_path(self.graph, id1, id2):
+            self.exception["rnf"] += 1
+            id1 = min(int(order[1]), int(order[2]))
+            id2 = max(int(order[1]), int(order[2]))
+            if id1 in self.rnfId2Num.keys():
+                self.rnfId2Num[id1] += 1
+            else:
+                self.rnfId2Num[id1] = 1
+            if id2 in self.rnfId2Num.keys():
+                self.rnfId2Num[id2] += 1
+            else:
+                self.rnfId2Num[id2] = 1
+            return f"rnf-{self.exception['rnf']}, {id1}-{self.rnfId2Num[id1]}, {id2}-{self.rnfId2Num[id2]}"
+        person2 = self.id2Person[id2]
+        if tag_id not in person2.tags.keys():
+            self.exception["tinf"] += 1
+            if tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[tag_id] += 1
+            else:
+                self.tinfId2Num[tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {tag_id}-{self.tinfId2Num[tag_id]}"
+        if id1 in person2.tags[tag_id].persons.keys():
+            self.exception["epi"] += 1
+            if id1 in self.epiId2Num.keys():
+                self.epiId2Num[id1] += 1
+            else:
+                self.epiId2Num[id1] = 1
+            return f"epi-{self.exception['epi']}, {id1}-{self.epiId2Num[id1]}"
+        if person2.tags[tag_id].get_size() <= 1111:
+            person2.add_person_to_tag(self.id2Person[id1], tag_id)
+        return "Ok"
+
+    def check_del_from_tag(self, order) -> str:
+        id1 = int(order[1])
+        id2 = int(order[2])
+        tag_id = int(order[3])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif id2 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id2 in self.pinfId2Num.keys():
+                self.pinfId2Num[id2] += 1
+            else:
+                self.pinfId2Num[id2] = 1
+            return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
+        person2 = self.id2Person[id2]
+        if tag_id not in person2.tags.keys():
+            self.exception["tinf"] += 1
+            if tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[tag_id] += 1
+            else:
+                self.tinfId2Num[tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {tag_id}-{self.tinfId2Num[tag_id]}"
+        if id1 not in person2.tags[tag_id].persons.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        person2.del_person_from_tag(id1, tag_id)
+        return "Ok"
+
+    def check_query_tag_value_sum(self, order) -> str:
+        id1 = int(order[1])
+        tag_id = int(order[2])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif tag_id not in self.id2Person[id1].tags.keys():
+            self.exception["tinf"] += 1
+            if tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[tag_id] += 1
+            else:
+                self.tinfId2Num[tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {tag_id}-{self.tinfId2Num[tag_id]}"
+        nodes = self.id2Person[id1].tags[tag_id].persons.keys()
+        subgraph = self.graph.subgraph(nodes)
+        result = sum(self.graph[u][v]['weight'] for u, v in subgraph.edges)
+        return str(result * 2)
+
+    def check_query_tag_age_var(self, order) -> str:
+        id1 = int(order[1])
+        tag_id = int(order[2])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif tag_id not in self.id2Person[id1].tags.keys():
+            self.exception["tinf"] += 1
+            if tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[tag_id] += 1
+            else:
+                self.tinfId2Num[tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {tag_id}-{self.tinfId2Num[tag_id]}"
+        result = self.id2Person[id1].tags[tag_id].get_age_var()
+        return str(result)
+
+    def check_query_best_acquaintance(self, order) -> str:
+        id1 = int(order[1])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif not list(self.graph.neighbors(id1)):
+            self.exception["anf"] += 1
+            if id1 in self.anfId2Num.keys():
+                self.anfId2Num[id1] += 1
+            else:
+                self.anfId2Num[id1] = 1
+            return f"anf-{self.exception['anf']}, {id1}-{self.anfId2Num[id1]}"
+        neighbors = list(self.graph.neighbors(id1))
+        max_weight = float("-inf")
+        max_weight_node = None
+        for neighbor in neighbors:
+            weight = self.graph[id1][neighbor].get('weight')
+            if weight > max_weight or (weight == max_weight and neighbor < max_weight_node):
+                max_weight = weight
+                max_weight_node = neighbor
+        return str(max_weight_node)
+
+    def check_query_couple_sum(self, order) -> str:
+        result = 0
+        for node in self.graph.nodes:
+            best_node = self.check_query_best_acquaintance(["", node])
+            if best_node.isdigit():
+                best_best_node = self.check_query_best_acquaintance(["", best_node])
+                if best_best_node.isdigit() and int(best_best_node) == node:
+                    result += 1
+        return str(int(result / 2))
+
+    def check_query_shortest_path(self, order) -> str:
+        id1 = int(order[1])
+        id2 = int(order[2])
+        if id1 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id1 in self.pinfId2Num.keys():
+                self.pinfId2Num[id1] += 1
+            else:
+                self.pinfId2Num[id1] = 1
+            return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
+        elif id2 not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if id2 in self.pinfId2Num.keys():
+                self.pinfId2Num[id2] += 1
+            else:
+                self.pinfId2Num[id2] = 1
+            return f"pinf-{self.exception['pinf']}, {id2}-{self.pinfId2Num[id2]}"
+        elif not nx.has_path(self.graph, id1, id2):
+            id1 = min(int(order[1]), int(order[2]))
+            id2 = max(int(order[1]), int(order[2]))
+            self.exception["pnf"] += 1
+            if id1 in self.pnfId2Num.keys():
+                self.pnfId2Num[id1] += 1
+            else:
+                self.pnfId2Num[id1] = 1
+            if id2 in self.pnfId2Num.keys():
+                self.pnfId2Num[id2] += 1
+            else:
+                self.pnfId2Num[id2] = 1
+            return f"pnf-{self.exception['pnf']}, {id1}-{self.pnfId2Num[id1]}, {id2}-{self.pnfId2Num[id2]}"
+        if id1 == id2:
+            return str(0)
+        return str(nx.shortest_path_length(self.graph, source=id1, target=id2) - 1)
+
 
     def generate_graph(self, input_index) -> nx.Graph:
         """
