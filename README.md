@@ -19,7 +19,7 @@ pip install plotly
 ```bash
 pip install scipy
 ```
-确保input.txt和output.txt在同一目录下，运行draw.py即可。
+确保input.txt在同一目录下，运行draw.py即可。
 
 ## 检验正确性功能使用说明
 在check.py中，修改264行的参数为你的input,output文件路径，运行check.py即可。

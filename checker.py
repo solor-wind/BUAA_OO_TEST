@@ -36,6 +36,8 @@ class Checker:
         output_index = 0
         while input_index < len(self.inputs):
             order = self.inputs[input_index].split()
+            if input_index == 1085:
+                pass
             if order[0] != 'load_network' and order[0] != 'ln':
                 if check_output and output_index == len(self.outputs):
                     return f"输出文件行数过少，输入第{input_index + 1}行，输出第{output_index}行后缺失"
@@ -181,6 +183,12 @@ class Checker:
         else:
             if self.graph[id1][id2]['weight'] + int(order[3]) <= 0:
                 self.graph.remove_edge(id1, id2)
+                for tag in self.id2Person[id1].tags.values():
+                    if id2 in tag.persons.keys():
+                        tag.del_person(id2)
+                for tag in self.id2Person[id2].tags.values():
+                    if id1 in tag.persons.keys():
+                        tag.del_person(id1)
             else:
                 self.graph[id1][id2]['weight'] += int(order[3])
             return "Ok"
@@ -333,7 +341,7 @@ class Checker:
             else:
                 self.epiId2Num[id1] = 1
             return f"epi-{self.exception['epi']}, {id1}-{self.epiId2Num[id1]}"
-        elif not nx.has_path(self.graph, id1, id2):
+        elif not self.graph.has_edge(id1, id2):
             self.exception["rnf"] += 1
             id1 = min(int(order[1]), int(order[2]))
             id2 = max(int(order[1]), int(order[2]))
@@ -443,9 +451,11 @@ class Checker:
         result = self.id2Person[id1].tags[tag_id].get_age_var()
         return str(result)
 
-    def check_query_best_acquaintance(self, order) -> str:
+    def check_query_best_acquaintance(self, order, cal_exceptions = True) -> str:
         id1 = int(order[1])
         if id1 not in self.id2Person.keys():
+            if not cal_exceptions:
+                return ""
             self.exception["pinf"] += 1
             if id1 in self.pinfId2Num.keys():
                 self.pinfId2Num[id1] += 1
@@ -453,6 +463,8 @@ class Checker:
                 self.pinfId2Num[id1] = 1
             return f"pinf-{self.exception['pinf']}, {id1}-{self.pinfId2Num[id1]}"
         elif not list(self.graph.neighbors(id1)):
+            if not cal_exceptions:
+                return ""
             self.exception["anf"] += 1
             if id1 in self.anfId2Num.keys():
                 self.anfId2Num[id1] += 1
@@ -472,10 +484,10 @@ class Checker:
     def check_query_couple_sum(self, order) -> str:
         result = 0
         for node in self.graph.nodes:
-            best_node = self.check_query_best_acquaintance(["", node])
-            if best_node.isdigit():
-                best_best_node = self.check_query_best_acquaintance(["", best_node])
-                if best_best_node.isdigit() and int(best_best_node) == node:
+            best_node = self.check_query_best_acquaintance(["", node], False)
+            if best_node:
+                best_best_node = self.check_query_best_acquaintance(["", best_node], False)
+                if best_best_node and int(best_best_node) == node:
                     result += 1
         return str(int(result / 2))
 

@@ -3,17 +3,20 @@ from checker import Checker
 import plotly.graph_objects as go
 
 
-def draw_graph(input_path, input_index=0):
+def draw_graph(input_path, input_index=0, person_tag_list=[]):
     """
     截至至input_index的图形,绘制input.txt对应的图形（如果不指定行数，则绘制整个input.txt） /
     :param input_path: 输入文件路径
     :param input_index: 截至行数
+    :param person_tag_list: 二元列表，表示需要绘制的person和tag的ID，若为空则绘制整张图
     :return:
     """
     checker = Checker(input_path)
     if input_index == 0:
         input_index = len(checker.inputs)
     graph = checker.generate_graph(input_index)
+    if person_tag_list:
+        graph = graph.subgraph(checker.id2Person[person_tag_list[0]].tags[person_tag_list[1]].persons.keys())
     # 设置节点位置
     pos = nx.spring_layout(graph)
     # 创建节点的坐标列表和标签列表
@@ -59,4 +62,4 @@ def draw_graph(input_path, input_index=0):
 
 
 if __name__ == '__main__':
-    draw_graph("input.txt", 0)
+    draw_graph("input.txt", 732)
