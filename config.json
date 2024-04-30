@@ -1,7 +1,7 @@
 {
-    "test_num": 5,
+    "test_num": 1000,
 
-    "command_limit":1000,
+    "command_limit":3000,
     "jar_path": "myJar.jar",
 
     "del_temp_file" : true,
@@ -9,5 +9,7 @@
     "clock_time" : 7.0,
 
     "node_limit": 100,
-    "load_prob": 0.5
+    "load_prob": 0.5,
+    "graph_prop": 0.5,
+    "tag_prop": 0.3
 }

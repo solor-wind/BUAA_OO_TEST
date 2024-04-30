@@ -6,7 +6,7 @@ from loader import load_output_to_file
 import shutil
 from func_timeout import func_timeout, FunctionTimedOut
 
-config = json.load(open('config.json'))
+config = json.load(open('config.json',encoding='utf-8'))
 test_num = int(config['test_num'])
 del_temp_file = config['del_temp_file']
 jar_path = config['jar_path']
