@@ -83,7 +83,7 @@ def generate_data(input_file: str) -> None:
     dense_tag_num = tag_command_num / 2
     tag_command_num -= dense_tag_num
     while True:
-        tag_id = random.randint(1, graph.edges.__len__())
+        tag_id = random.randint(1, graph.edges.__len__() - 1)
         str_at.append('at ' + str(tag_id) + ' ' + str(tag_id))
         dense_tag_num -= 1
         tag.append(tag_id)
@@ -189,7 +189,7 @@ def generate_data(input_file: str) -> None:
 
         ans2 = []
         ans2.append('ln ' + str(load_node_num))
-        load_node = random.sample(node, load_node_num)
+        load_node = np.random.choice(node, load_node_num)
 
         str_load_node = ''
         for i in range(0, load_node_num):
