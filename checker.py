@@ -36,8 +36,6 @@ class Checker:
         output_index = 0
         while input_index < len(self.inputs):
             order = self.inputs[input_index].split()
-            if input_index == 1085:
-                pass
             if order[0] != 'load_network' and order[0] != 'ln':
                 if check_output and output_index == len(self.outputs):
                     return f"输出文件行数过少，输入第{input_index + 1}行，输出第{output_index}行后缺失"
