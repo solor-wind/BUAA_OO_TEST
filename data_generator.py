@@ -190,7 +190,7 @@ def generate_data(input_file: str) -> None:
                     for j in range(graph.edges[tag_id].__len__()):
                         if j >= 10:
                             break
-                        red.add(graph.edges[tag_id][j])
+                        red.add(graph.edges[tag_id][j].end)
         elif prob < 0.8:  # anm
             if random.random() < 0.5:
                 str_am.append(
