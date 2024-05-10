@@ -633,7 +633,6 @@ class Checker:
             del self.id2Message[messageId]
             person1.add_social_value(message.social_value)
             for person in tag.persons.values():
-                person.add_message(message)
                 person.add_social_value(message.social_value)
             if message.special_type == 'red_envelope':
                 money = 0
