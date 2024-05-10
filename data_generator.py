@@ -19,9 +19,10 @@ def generate_data(input_file: str) -> None:
         command_num -= 1
     graph_command_num = int(command_num * config['graph_prop'])
     tag_command_num = int(command_num * config['tag_prop'])
+    message_command_num = int(command_num * config['message_prop'])
     query_command_num = command_num - graph_command_num - tag_command_num
 
-    # 先建立图(1/3)
+    # 先建立图(1/4)
     # 一半的指令用于生产稠密图，另一半用于加剩下的节点、修改节点、随机加边
     dense_node_num = int((1 + (1 + 4 * graph_command_num) ** 0.5) / 2)  # 稠密图节点数
     edge_num = dense_node_num * (dense_node_num - 1) / 2
@@ -55,13 +56,15 @@ def generate_data(input_file: str) -> None:
         prob = random.random()
         tmpstr = ''
         if prob < 0.2:  # 加点
-            if random.random() < 0.8:  # 加入已有的点
+            if random.random() < 0.5:  # 加入已有的点
                 tmpstr = 'ap ' + str(np.random.choice(node)) + ' OO_plus' + ' ' + str(random.randint(1, 200))
             else:
-                tmpstr = 'ap ' + str(get_int()) + ' OO_random' + ' ' + str(random.randint(1, 200))
+                node.append(get_int())
+                tmpstr = 'ap ' + str(node[-1]) + ' OO_random' + ' ' + str(random.randint(1, 200))
         elif prob < 0.7:  # 加边
             if random.random() < 0.8:  # 已有的点之间
-                tmpstr = 'ar ' + str(np.random.choice(node)) + ' ' + str(np.random.choice(node)) + ' ' + str(
+                edge.append((np.random.choice(node), np.random.choice(node)))
+                tmpstr = 'ar ' + str(edge[-1][0]) + ' ' + str(edge[-1][1]) + ' ' + str(
                     random.randint(1, 200))
             else:
                 tmpstr = 'ar ' + str(get_int()) + ' ' + str(get_int()) + ' ' + str(random.randint(1, 200))
@@ -75,7 +78,7 @@ def generate_data(input_file: str) -> None:
         ans.insert(random.randint(0, ans.__len__() - 1), tmpstr)
         graph_command_num -= 1
 
-    # 再插入tag
+    # 再插入tag(2/4)
     tag = []
     str_at = []
     str_att = []
@@ -134,51 +137,151 @@ def generate_data(input_file: str) -> None:
                            'dft ' + str(get_int()) + ' ' + str(get_int()) + ' ' + str(get_int()))
         tag_command_num -= 1
 
-    # 接着插入查询(3/3)
+    # 然后插入message(3/4)
+    # sei;am,arem,anm,aem;sm;cn,dce
+    message = set()
+    str_am = []
+    emoji = []
+    # 先加足够的消息
+    am_command_num = message_command_num / 2
+    message_command_num -= am_command_num
+    while am_command_num > 0:
+        prob = random.random()
+        id = get_int()
+        tag_id = random.choice(tag)
+        edge_id = random.randint(0, edge.__len__() - 1)
+        while id in message:
+            id = get_int()
+        message.add(id)
+        if emoji.__len__() == 0 or prob < 0.2:
+            emoji_id = 0
+            if emoji.__len__() == 0 or random.random() < 0.8:
+                emoji_id = get_int()
+            else:
+                emoji_id = random.choice(emoji)
+            emoji.append(emoji_id)
+            str_am.append('sei ' + str(emoji_id))
+            if random.random() < 0.5:
+                str_am.append('aem ' + str(id) + ' ' + str(emoji_id) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(
+                    edge[edge_id][1]))
+            else:
+                str_am.append('aem ' + str(id) + ' ' + str(emoji_id) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+            am_command_num -= 1
+        elif prob < 0.4:  # am
+            if random.random() < 0.5:
+                str_am.append('am ' + str(id) + ' ' + str(random.randint(-1000, 1000)) + ' 0 ' + str(
+                    edge[edge_id][0]) + ' ' + str(edge[edge_id][1]))
+            else:
+                str_am.append(
+                    'am ' + str(id) + ' ' + str(random.randint(-1000, 1000)) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+        elif prob < 0.6:  # arem
+            if random.random() < 0.5:
+                str_am.append(
+                    'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(
+                        edge[edge_id][1]))
+            else:
+                str_am.append(
+                    'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+        elif prob < 0.8:  # anm
+            if random.random() < 0.5:
+                str_am.append(
+                    'anm ' + str(id) + ' wtfOO' + str(id) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(edge[edge_id][1]))
+            else:
+                str_am.append('anm ' + str(id) + ' wtfOO' + str(id) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+        am_command_num -= 1
+
+    # 再发送、清除消息，随机添加消息
+    message = list(message)
+    while message_command_num > 0:
+        prob = random.random()
+        if prob < 0.3:
+            str_am.insert(random.randint(0, str_am.__len__() - 1), 'sm ' + str(random.choice(message)))
+        elif prob < 0.5:
+            str_am.insert(random.randint(0, str_am.__len__() - 1), 'cn ' + str(random.choice(node)))
+        elif prob < 0.8:
+            str_am.insert(random.randint(0, str_am.__len__() - 1), 'dce ' + str(random.choice(emoji)))
+        elif prob < 0.95:
+            if random.random() < 0.5:
+                str_am.append('am ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 0 ' + str(
+                    get_int()) + ' ' + str(get_int()))
+            else:
+                str_am.append('am ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 1 ' + str(
+                    get_int()) + ' ' + str(get_int()))
+        else:
+            if random.random() < 0.5:
+                str_am.append(
+                    'aem ' + str(get_int()) + ' ' + str(get_int()) + ' 0 ' + str(get_int()) + ' ' + str(get_int()))
+            else:
+                str_am.append(
+                    'aem ' + str(get_int()) + ' ' + str(get_int()) + ' 1 ' + str(get_int()) + ' ' + str(get_int()))
+        message_command_num -= 1
+    ans.extend(str_am)
+
+    # 接着插入查询(4/4)qsv,qrm,qp,qm
     while query_command_num > 0:
         prob = random.random()
-        if prob < 0.1:  # qv
+        if prob < 0.05:  # qv
             if random.random() < 0.5:
                 # 从node中随机选取一个元素
                 tmp = np.random.choice(list(node), 2)
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qv ' + str(tmp[0]) + ' ' + str(tmp[1]))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qv ' + str(get_int()) + ' ' + str(get_int()))
-        elif prob < 0.2:  # qci
+        elif prob < 0.1:  # qci
             if random.random() < 0.5:
                 tmp = np.random.choice(list(node), 2)
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qci ' + str(tmp[0]) + ' ' + str(tmp[1]))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qci ' + str(get_int()) + ' ' + str(get_int()))
-        elif prob < 0.3:  # qbs
+        elif prob < 0.15:  # qbs
             ans.insert(random.randint(0, ans.__len__() - 1), 'qbs')
-        elif prob < 0.4:  # qts
+        elif prob < 0.25:  # qts
             ans.insert(random.randint(0, ans.__len__() - 1), 'qts')
-        elif prob < 0.5:  # qba
+        elif prob < 0.3:  # qba
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qba ' + str(np.random.choice(node)))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qba ' + str(get_int()))
-        elif prob < 0.7:  # qcs
+        elif prob < 0.35:  # qcs
             ans.insert(random.randint(0, ans.__len__() - 1), 'qcs')
-        elif prob < 0.8:  # qsp
+        elif prob < 0.45:  # qsp
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1),
                            'qsp ' + str(np.random.choice(node)) + ' ' + str(np.random.choice(node)))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qsp ' + str(get_int()) + ' ' + str(get_int()))
-        elif prob < 0.9:  # qtvs
+        elif prob < 0.55:  # qtvs
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1),
                            'qtvs ' + str(np.random.choice(tag)) + ' ' + str(np.random.choice(tag)))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qtvs ' + str(get_int()) + ' ' + str(get_int()))
-        else:  # qtav
+        elif prob < 0.6:  # qtav
             if random.random() < 0.8:
                 ans.insert(random.randint(0, ans.__len__() - 1),
                            'qtav ' + str(np.random.choice(tag)) + ' ' + str(np.random.choice(tag)))
             else:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qtav ' + str(get_int()) + ' ' + str(get_int()))
+        elif prob < 0.7:  # qsv
+            if random.random() < 0.8:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qsv ' + str(np.random.choice(node)))
+            else:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qsv ' + str(get_int()))
+        elif prob < 0.8:  # qrm
+            if random.random() < 0.8:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qrm ' + str(np.random.choice(node)))
+            else:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qrm ' + str(get_int()))
+        elif prob < 0.9:  # qp
+            if random.random() < 0.8:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qp ' + str(np.random.choice(emoji)))
+            else:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qp ' + str(get_int()))
+        else:  # qm
+            if random.random() < 0.8:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qm ' + str(np.random.choice(node)))
+            else:
+                ans.insert(random.randint(0, ans.__len__() - 1), 'qm ' + str(get_int()))
         query_command_num -= 1
 
     # 最后生成load_network(3.5/3)

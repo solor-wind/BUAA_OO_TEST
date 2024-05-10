@@ -10,6 +10,7 @@
 
     "node_limit": 100,
     "load_prob": 0.5,
-    "graph_prop": 0.5,
-    "tag_prop": 0.3
+    "graph_prop": 0.4,
+    "tag_prop": 0.2,
+    "message_prop": 0.2
 }

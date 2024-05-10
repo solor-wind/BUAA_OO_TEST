@@ -30,3 +30,7 @@ pip install scipy
 `node_limit` 为图的节点数上限
 
 `load_prob` 为load_network的出现概率
+
+`tag_prob` 为生成tag相关指令（不包含查询）的比例
+
+`message_prob` 为生成message相关指令（不包含查询）的比例
