@@ -141,6 +141,7 @@ def generate_data(input_file: str) -> None:
     # sei;am,arem,anm,aem;sm;cn,dce
     message = set()
     str_am = []
+    red = set()
     emoji = []
     # 先加足够的消息
     am_command_num = message_command_num / 2
@@ -179,9 +180,17 @@ def generate_data(input_file: str) -> None:
                 str_am.append(
                     'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(
                         edge[edge_id][1]))
+                red.add(edge[edge_id][0])
+                red.add(edge[edge_id][1])
             else:
                 str_am.append(
                     'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+                red.add(tag_id)
+                if tag_id < graph.edges.__len__() and tag_id >= 0:
+                    for j in range(graph.edges[tag_id].__len__()):
+                        if j >= 10:
+                            break
+                        red.add(graph.edges[tag_id][j])
         elif prob < 0.8:  # anm
             if random.random() < 0.5:
                 str_am.append(
@@ -192,14 +201,18 @@ def generate_data(input_file: str) -> None:
 
     # 再发送、清除消息，随机添加消息
     message = list(message)
+    red = list(red)
     while message_command_num > 0:
         prob = random.random()
         if prob < 0.3:
-            str_am.insert(random.randint(0, str_am.__len__() - 1), 'sm ' + str(random.choice(message)))
+            str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
+                          'sm ' + str(random.choice(message)))
         elif prob < 0.5:
-            str_am.insert(random.randint(0, str_am.__len__() - 1), 'cn ' + str(random.choice(node)))
+            str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
+                          'cn ' + str(random.choice(node)))
         elif prob < 0.8:
-            str_am.insert(random.randint(0, str_am.__len__() - 1), 'dce ' + str(random.choice(emoji)))
+            str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
+                          'dce ' + str(random.choice(emoji)))
         elif prob < 0.95:
             if random.random() < 0.5:
                 str_am.append('am ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 0 ' + str(
@@ -217,7 +230,7 @@ def generate_data(input_file: str) -> None:
         message_command_num -= 1
     ans.extend(str_am)
 
-    # 接着插入查询(4/4)qsv,qrm,qp,qm
+    # 接着插入查询(4/4)
     while query_command_num > 0:
         prob = random.random()
         if prob < 0.05:  # qv
@@ -264,24 +277,28 @@ def generate_data(input_file: str) -> None:
                 ans.insert(random.randint(0, ans.__len__() - 1), 'qtav ' + str(get_int()) + ' ' + str(get_int()))
         elif prob < 0.7:  # qsv
             if random.random() < 0.8:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qsv ' + str(np.random.choice(node)))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1),
+                           'qsv ' + str(np.random.choice(node)))
             else:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qsv ' + str(get_int()))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1), 'qsv ' + str(get_int()))
         elif prob < 0.8:  # qrm
             if random.random() < 0.8:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qrm ' + str(np.random.choice(node)))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1),
+                           'qrm ' + str(np.random.choice(node)))
             else:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qrm ' + str(get_int()))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1), 'qrm ' + str(get_int()))
         elif prob < 0.9:  # qp
             if random.random() < 0.8:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qp ' + str(np.random.choice(emoji)))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1),
+                           'qp ' + str(np.random.choice(emoji)))
             else:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qp ' + str(get_int()))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1), 'qp ' + str(get_int()))
         else:  # qm
-            if random.random() < 0.8:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qm ' + str(np.random.choice(node)))
+            if red.__len__() > 0 and random.random() < 0.8:
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1),
+                           'qm ' + str(np.random.choice(red)))
             else:
-                ans.insert(random.randint(0, ans.__len__() - 1), 'qm ' + str(get_int()))
+                ans.insert(random.randint(int(ans.__len__() / 2), ans.__len__() - 1), 'qm ' + str(get_int()))
         query_command_num -= 1
 
     # 最后生成load_network(3.5/3)
