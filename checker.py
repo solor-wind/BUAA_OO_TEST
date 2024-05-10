@@ -2,6 +2,7 @@ import networkx as nx
 from loader import file_load
 from person import Person
 from tag import Tag
+from message import Message
 
 
 class Checker:
@@ -14,7 +15,8 @@ class Checker:
         self.inputs = file_load(in_path)
         if out_path is not None:
             self.outputs = file_load(out_path)
-        self.exception = {"pinf": 0, "epi": 0, "rnf": 0, "er": 0, "anf": 0, "eti": 0, "pnf": 0, "tinf": 0}
+        self.exception = {"pinf": 0, "epi": 0, "rnf": 0, "er": 0, "anf": 0, "eti": 0, "pnf": 0, "tinf": 0,
+                          "einf": 0, "eei": 0, "emi": 0, "minf": 0}
         self.id2Person = {}
         self.pinfId2Num = {}
         self.epiId2Num = {}
@@ -24,7 +26,13 @@ class Checker:
         self.etiId2Num = {}
         self.pnfId2Num = {}
         self.tinfId2Num = {}
+        self.einfId2Num = {}
+        self.eeiId2Num = {}
+        self.emiId2Num = {}
+        self.minfId2Num = {}
         self.graph = nx.Graph()
+        self.id2Message = {}
+        self.emojiId2Heat = {}
 
     def check(self, check_output=True) -> str:
         """
@@ -73,6 +81,30 @@ class Checker:
                     check_func = self.check_query_couple_sum
                 elif order[0] == 'query_shortest_path' or order[0] == 'qsp':
                     check_func = self.check_query_shortest_path
+                elif order[0] == 'add_message' or order[0] == 'am':
+                    check_func = self.check_add_message
+                elif order[0] == 'send_message' or order[0] == 'sm':
+                    check_func = self.check_send_message
+                elif order[0] == 'query_social_value' or order[0] == 'qsv':
+                    check_func = self.check_query_social_value
+                elif order[0] == 'query_received_messages' or order[0] == 'qrm':
+                    check_func = self.check_query_received_messages
+                elif order[0] == 'add_red_envelope_message' or order[0] == 'arem':
+                    check_func = self.check_add_red_envelope_message
+                elif order[0] == 'add_notice_message' or order[0] == 'anm':
+                    check_func = self.check_add_notice_message
+                elif order[0] == 'clean_notices' or order[0] == 'cn':
+                    check_func = self.check_clean_notices
+                elif order[0] == 'add_emoji_message' or order[0] == 'aem':
+                    check_func = self.check_add_emoji_message
+                elif order[0] == 'store_emoji_id' or order[0] == 'sei':
+                    check_func = self.check_store_emoji_id
+                elif order[0] == 'query_popularity' or order[0] == 'qp':
+                    check_func = self.check_query_popularity
+                elif order[0] == 'delete_cold_emoji' or order[0] == 'dce':
+                    check_func = self.check_delete_cold_emoji
+                elif order[0] == 'query_money' or order[0] == 'qm':
+                    check_func = self.check_query_money
                 else:
                     return f"第{input_index + 1}行输入格式错误"
                 ans = check_func(order)
@@ -449,7 +481,7 @@ class Checker:
         result = self.id2Person[id1].tags[tag_id].get_age_var()
         return str(result)
 
-    def check_query_best_acquaintance(self, order, cal_exceptions = True) -> str:
+    def check_query_best_acquaintance(self, order, cal_exceptions=True) -> str:
         id1 = int(order[1])
         if id1 not in self.id2Person.keys():
             if not cal_exceptions:
@@ -523,6 +555,281 @@ class Checker:
             return str(0)
         return str(nx.shortest_path_length(self.graph, source=id1, target=id2) - 1)
 
+    def check_add_message(self, order) -> str:
+        messageId = int(order[1])
+        social_value = int(order[2])
+        type0 = int(order[3])
+        person_id1 = int(order[4])
+        person_id2_or_tag_id = int(order[5])
+        if type0 == 0 and ((person_id1 not in self.id2Person.keys()) or (
+                person_id2_or_tag_id not in self.id2Person.keys())):
+            return "The person with this number does not exist"
+        if type0 == 1 and person_id1 not in self.id2Person.keys():
+            return "The person with this number does not exist"
+        person1 = self.id2Person[person_id1]
+        if type0 == 1 and person_id2_or_tag_id not in person1.tags.keys():
+            return "Tag does not exist"
+        if messageId in self.id2Message.keys():
+            self.exception["emi"] += 1
+            if messageId in self.emiId2Num.keys():
+                self.emiId2Num[messageId] += 1
+            else:
+                self.emiId2Num[messageId] = 1
+            return f"emi-{self.exception['emi']}, {messageId}-{self.emiId2Num[messageId]}"
+        if type0 == 0 and person_id2_or_tag_id == person_id1:
+            self.exception["epi"] += 1
+            if person_id1 in self.epiId2Num.keys():
+                self.epiId2Num[person_id1] += 1
+            else:
+                self.epiId2Num[person_id1] = 1
+            return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
+        self.id2Message[messageId] = Message(messageId, social_value, type0, person_id1, person_id2_or_tag_id)
+        return "Ok"
+
+    def check_send_message(self, order) -> str:
+        messageId = int(order[1])
+        if messageId not in self.id2Message.keys():
+            self.exception["minf"] += 1
+            if messageId in self.minfId2Num.keys():
+                self.minfId2Num[messageId] += 1
+            else:
+                self.minfId2Num[messageId] = 1
+            return f"minf-{self.exception['minf']}, {messageId}-{self.minfId2Num[messageId]}"
+        message = self.id2Message[messageId]
+        if message.type == 0 and not self.graph.has_edge(message.person_id1, message.person_id2):
+            self.exception["rnf"] += 1
+            id1 = min(message.person_id1, message.person_id2)
+            id2 = max(message.person_id1, message.person_id2)
+            if id1 in self.rnfId2Num.keys():
+                self.rnfId2Num[id1] += 1
+            else:
+                self.rnfId2Num[id1] = 1
+            if id2 in self.rnfId2Num.keys():
+                self.rnfId2Num[id2] += 1
+            else:
+                self.rnfId2Num[id2] = 1
+            return f"rnf-{self.exception['rnf']}, {id1}-{self.rnfId2Num[id1]}, {id2}-{self.rnfId2Num[id2]}"
+        person1 = self.id2Person[message.person_id1]
+        if message.type == 1 and message.tag_id not in person1.tags.keys():
+            self.exception["tinf"] += 1
+            if message.tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[message.tag_id] += 1
+            else:
+                self.tinfId2Num[message.tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {message.tag_id}-{self.tinfId2Num[message.tag_id]}"
+        if message.type == 0:
+            person2 = self.id2Person[message.person_id2]
+            del self.id2Message[messageId]
+            person2.add_message(message)
+            person1.add_social_value(message.social_value)
+            person2.add_social_value(message.social_value)
+            if message.special_type == 'red_envelope':
+                person1.add_money(-int(message.special_character))
+                person2.add_money(int(message.special_character))
+            elif message.special_type == 'emoji':
+                self.emojiId2Heat[int(message.special_character)] += 1
+        elif message.type == 1:
+            tag = person1.tags[message.tag_id]
+            del self.id2Message[messageId]
+            person1.add_social_value(message.social_value)
+            for person in tag.persons.keys():
+                person.add_message(message)
+                person.add_social_value(message.social_value)
+            if message.special_type == 'red_envelope':
+                money = 0
+                if tag.get_size() > 0:
+                    money = int(message.special_character) // tag.get_size()
+                for person in tag.persons.keys():
+                    person.add_money(money)
+                person1.add_money(-tag.get_size() * money)
+            elif message.special_type == 'emoji':
+                self.emojiId2Heat[int(message.special_character)] += 1
+        return "Ok"
+
+    def check_query_social_value(self, order) -> str:
+        person_id = int(order[1])
+        if person_id not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if person_id in self.pinfId2Num.keys():
+                self.pinfId2Num[person_id] += 1
+            else:
+                self.pinfId2Num[person_id] = 1
+            return f"pinf-{self.exception['pinf']}, {person_id}-{self.pinfId2Num[person_id]}"
+        return str(self.id2Person[person_id].social_value)
+
+    def check_query_received_messages(self, order) -> str:
+        person_id = int(order[1])
+        if person_id not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if person_id in self.pinfId2Num.keys():
+                self.pinfId2Num[person_id] += 1
+            else:
+                self.pinfId2Num[person_id] = 1
+            return f"pinf-{self.exception['pinf']}, {person_id}-{self.pinfId2Num[person_id]}"
+        person = self.id2Person[person_id]
+        return person.get_received_message()
+
+    def check_add_red_envelope_message(self, order) -> str:
+        messageId = int(order[1])
+        money = int(order[2])
+        type0 = int(order[3])
+        person_id1 = int(order[4])
+        person_id2_or_tag_id = int(order[5])
+        if type0 == 0 and ((person_id1 not in self.id2Person.keys()) or (
+                person_id2_or_tag_id not in self.id2Person.keys())):
+            return "The person with this number does not exist"
+        if type0 == 1 and person_id1 not in self.id2Person.keys():
+            return "The person with this number does not exist"
+        person1 = self.id2Person[person_id1]
+        if type0 == 1 and person_id2_or_tag_id not in person1.tags.keys():
+            return "Tag does not exist"
+        if messageId in self.id2Message.keys():
+            self.exception["emi"] += 1
+            if messageId in self.emiId2Num.keys():
+                self.emiId2Num[messageId] += 1
+            else:
+                self.emiId2Num[messageId] = 1
+            return f"emi-{self.exception['emi']}, {messageId}-{self.emiId2Num[messageId]}"
+        if type0 == 0 and person_id2_or_tag_id == person_id1:
+            self.exception["epi"] += 1
+            if person_id1 in self.epiId2Num.keys():
+                self.epiId2Num[person_id1] += 1
+            else:
+                self.epiId2Num[person_id1] = 1
+            return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
+        self.id2Message[messageId] = Message(messageId, 5 * money, type0, person_id1, person_id2_or_tag_id,
+                                             'red_envelope', str(money))
+        return "Ok"
+
+    def check_add_notice_message(self, order):
+        messageId = int(order[1])
+        string = str(order[2])
+        type0 = int(order[3])
+        person_id1 = int(order[4])
+        person_id2_or_tag_id = int(order[5])
+        if type0 == 0 and (person_id1 not in self.id2Person.keys()) or (
+                person_id2_or_tag_id not in self.id2Person.keys()):
+            return "The person with this number does not exist"
+        if type0 == 1 and person_id1 not in self.id2Person.keys():
+            return "The person with this number does not exist"
+        person1 = self.id2Person[person_id1]
+        if type0 == 1 and person_id2_or_tag_id not in person1.tags.keys():
+            return "Tag does not exist"
+        if messageId in self.id2Message.keys():
+            self.exception["emi"] += 1
+            if messageId in self.emiId2Num.keys():
+                self.emiId2Num[messageId] += 1
+            else:
+                self.emiId2Num[messageId] = 1
+            return f"emi-{self.exception['emi']}, {messageId}-{self.emiId2Num[messageId]}"
+        if type0 == 0 and person_id2_or_tag_id == person_id1:
+            self.exception["epi"] += 1
+            if person_id1 in self.epiId2Num.keys():
+                self.epiId2Num[person_id1] += 1
+            else:
+                self.epiId2Num[person_id1] = 1
+            return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
+        self.id2Message[messageId] = Message(messageId, len(string), type0, person_id1, person_id2_or_tag_id, 'notice',
+                                             string)
+        return "Ok"
+
+    def check_clean_notices(self, order):
+        person_id = int(order[1])
+        if person_id not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if person_id in self.pinfId2Num.keys():
+                self.pinfId2Num[person_id] += 1
+            else:
+                self.pinfId2Num[person_id] = 1
+            return f"pinf-{self.exception['pinf']}, {person_id}-{self.pinfId2Num[person_id]}"
+        person = self.id2Person[person_id]
+        person.clean_notices()
+        return "Ok"
+
+    def check_add_emoji_message(self, order):
+        messageId = int(order[1])
+        emojiNumber = int(order[2])
+        type0 = int(order[3])
+        person_id1 = int(order[4])
+        person_id2_or_tag_id = int(order[5])
+        if type0 == 0 and ((person_id1 not in self.id2Person.keys()) or (
+                person_id2_or_tag_id not in self.id2Person.keys())):
+            return "The person with this number does not exist"
+        if type0 == 1 and person_id1 not in self.id2Person.keys():
+            return "The person with this number does not exist"
+        person1 = self.id2Person[person_id1]
+        if type0 == 1 and person_id2_or_tag_id not in person1.tags.keys():
+            return "Tag does not exist"
+        if messageId in self.id2Message.keys():
+            self.exception["emi"] += 1
+            if messageId in self.emiId2Num.keys():
+                self.emiId2Num[messageId] += 1
+            else:
+                self.emiId2Num[messageId] = 1
+            return f"emi-{self.exception['emi']}, {messageId}-{self.emiId2Num[messageId]}"
+        if not emojiNumber in self.emojiId2Heat.keys():
+            self.exception['einf'] += 1
+            if emojiNumber in self.einfId2Num.keys():
+                self.einfId2Num[emojiNumber] += 1
+            else:
+                self.einfId2Num[emojiNumber] = 1
+        if type0 == 0 and person_id2_or_tag_id == person_id1:
+            self.exception["epi"] += 1
+            if person_id1 in self.epiId2Num.keys():
+                self.epiId2Num[person_id1] += 1
+            else:
+                self.epiId2Num[person_id1] = 1
+            return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
+        self.id2Message[messageId] = Message(messageId, emojiNumber, type0, person_id1, person_id2_or_tag_id, 'emoji',
+                                             str(emojiNumber))
+        return "Ok"
+
+    def check_store_emoji_id(self, order):
+        emoji_id = int(order[1])
+        if emoji_id in self.emojiId2Heat.keys():
+            self.exception["eei"] += 1
+            if emoji_id in self.eeiId2Num.keys():
+                self.eeiId2Num[emoji_id] += 1
+            else:
+                self.eeiId2Num[emoji_id] = 1
+            return f"eei-{self.exception['eei']}, {emoji_id}-{self.eeiId2Num[emoji_id]}"
+        self.emojiId2Heat[emoji_id] = 0
+        return "Ok"
+
+    def check_query_popularity(self, order):
+        emoji_id = int(order[1])
+        if emoji_id not in self.emojiId2Heat.keys():
+            self.exception["einf"] += 1
+            if emoji_id in self.einfId2Num.keys():
+                self.einfId2Num[emoji_id] += 1
+            else:
+                self.einfId2Num[emoji_id] = 1
+            return f"einf-{self.exception['einf']}, {emoji_id}-{self.einfId2Num[emoji_id]}"
+        return str(self.emojiId2Heat[emoji_id])
+
+    def check_delete_cold_emoji(self, order):
+        limit = int(order[1])
+        message_id_to_del = []
+        for emoji_id in list(self.emojiId2Heat.keys()):
+            if self.emojiId2Heat[emoji_id] <= limit:
+                del self.emojiId2Heat[emoji_id]
+                for message in self.id2Message.values():
+                    if message.special_type == 'emoji' and int(message.special_character) == emoji_id:
+                        message_id_to_del.append(message.id)
+        for message_id in message_id_to_del:
+            del self.id2Message[message_id]
+        return str(len(self.emojiId2Heat))
+
+    def check_query_money(self, order):
+        person_id = int(order[1])
+        if person_id not in self.id2Person.keys():
+            self.exception["pinf"] += 1
+            if person_id in self.pinfId2Num.keys():
+                self.pinfId2Num[person_id] += 1
+            else:
+                self.pinfId2Num[person_id] = 1
+            return f"pinf-{self.exception['pinf']}, {person_id}-{self.pinfId2Num[person_id]}"
+        return str(self.id2Person[person_id].money)
 
     def generate_graph(self, input_index) -> nx.Graph:
         """
