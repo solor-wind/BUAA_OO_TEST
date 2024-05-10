@@ -617,7 +617,6 @@ class Checker:
             else:
                 self.tinfId2Num[message.tag_id] = 1
             return f"tinf-{self.exception['tinf']}, {message.tag_id}-{self.tinfId2Num[message.tag_id]}"
-        print(message.social_value)
         if message.type == 0:
             person2 = self.id2Person[message.person_id2]
             del self.id2Message[messageId]
