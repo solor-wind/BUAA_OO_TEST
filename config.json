@@ -1,5 +1,5 @@
 {
-    "test_num": 100,
+    "test_num": 1000,
 
     "command_limit":3000,
     "jar_path": "myJar.jar",

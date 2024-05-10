@@ -48,9 +48,12 @@ class Person:
         return result_str
 
     def clean_notices(self):
+        to_del_messages = []
         for message in self.messages:
             if message.special_type == 'notice':
-                self.messages.remove(message)
+                to_del_messages.append(message)
+        for message in to_del_messages:
+            self.messages.remove(message)
 
     def add_social_value(self, num):
         self.social_value += num

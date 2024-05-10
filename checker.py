@@ -617,6 +617,7 @@ class Checker:
             else:
                 self.tinfId2Num[message.tag_id] = 1
             return f"tinf-{self.exception['tinf']}, {message.tag_id}-{self.tinfId2Num[message.tag_id]}"
+        print(message.social_value)
         if message.type == 0:
             person2 = self.id2Person[message.person_id2]
             del self.id2Message[messageId]
@@ -632,14 +633,14 @@ class Checker:
             tag = person1.tags[message.tag_id]
             del self.id2Message[messageId]
             person1.add_social_value(message.social_value)
-            for person in tag.persons.keys():
+            for person in tag.persons.values():
                 person.add_message(message)
                 person.add_social_value(message.social_value)
             if message.special_type == 'red_envelope':
                 money = 0
                 if tag.get_size() > 0:
                     money = int(message.special_character) // tag.get_size()
-                for person in tag.persons.keys():
+                for person in tag.persons.values():
                     person.add_money(money)
                 person1.add_money(-tag.get_size() * money)
             elif message.special_type == 'emoji':
@@ -767,12 +768,13 @@ class Checker:
             else:
                 self.emiId2Num[messageId] = 1
             return f"emi-{self.exception['emi']}, {messageId}-{self.emiId2Num[messageId]}"
-        if not emojiNumber in self.emojiId2Heat.keys():
+        if emojiNumber not in self.emojiId2Heat.keys():
             self.exception['einf'] += 1
             if emojiNumber in self.einfId2Num.keys():
                 self.einfId2Num[emojiNumber] += 1
             else:
                 self.einfId2Num[emojiNumber] = 1
+            return f"einf-{self.exception['einf']}, {emojiNumber}-{self.einfId2Num[emojiNumber]}"
         if type0 == 0 and person_id2_or_tag_id == person_id1:
             self.exception["epi"] += 1
             if person_id1 in self.epiId2Num.keys():

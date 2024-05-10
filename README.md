@@ -22,7 +22,7 @@ pip install scipy
 确保input.txt在同一目录下，运行draw.py即可。
 
 ## 检验正确性功能使用说明
-在check.py中，修改264行的参数为你的input,output文件路径，运行check.py即可。
+在check.py中，修改848行的参数为你的input,output文件路径，运行check.py即可。
 
 ## 数据生成使用说明
 `command_limit` 为每次个样例的指令数上限
