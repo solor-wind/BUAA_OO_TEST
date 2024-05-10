@@ -8,7 +8,9 @@ pip install cyaron
 ```bash
 pip install func_timeout
 ```
+另外，可能更新不及时，如果发现bug可以提出issue，尽量及时处理
 
+*点点star谢谢（*
 ## 绘图功能使用说明  
 ### 前置条件  
 需要plotly库，可以通过以下命令安装：  
