@@ -157,7 +157,7 @@ def generate_data(input_file: str) -> None:
         if emoji.__len__() == 0 or prob < 0.2:
             emoji_id = 0
             if emoji.__len__() == 0 or random.random() < 0.8:
-                emoji_id = get_int()
+                emoji_id = random.randint(-1000, 1000)
             else:
                 emoji_id = random.choice(emoji)
             emoji.append(emoji_id)
@@ -178,13 +178,13 @@ def generate_data(input_file: str) -> None:
         elif prob < 0.6:  # arem
             if random.random() < 0.5:
                 str_am.append(
-                    'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(
+                    'arem ' + str(id) + ' ' + str(random.randint(0, 200)) + ' 0 ' + str(edge[edge_id][0]) + ' ' + str(
                         edge[edge_id][1]))
                 red.add(edge[edge_id][0])
                 red.add(edge[edge_id][1])
             else:
                 str_am.append(
-                    'arem ' + str(id) + ' ' + str(random.randint(0, 1000)) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
+                    'arem ' + str(id) + ' ' + str(random.randint(0, 200)) + ' 1 ' + str(tag_id) + ' ' + str(tag_id))
                 red.add(tag_id)
                 if tag_id < graph.edges.__len__() and tag_id >= 0:
                     for j in range(graph.edges[tag_id].__len__()):
@@ -212,7 +212,7 @@ def generate_data(input_file: str) -> None:
                           'cn ' + str(random.choice(node)))
         elif prob < 0.8:
             str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
-                          'dce ' + str(random.choice(emoji)))
+                          'dce ' + str(random.randint(1, 30)))
         elif prob < 0.95:
             if random.random() < 0.5:
                 str_am.append('am ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 0 ' + str(
@@ -223,10 +223,12 @@ def generate_data(input_file: str) -> None:
         else:
             if random.random() < 0.5:
                 str_am.append(
-                    'aem ' + str(get_int()) + ' ' + str(get_int()) + ' 0 ' + str(get_int()) + ' ' + str(get_int()))
+                    'aem ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 0 ' + str(
+                        get_int()) + ' ' + str(get_int()))
             else:
                 str_am.append(
-                    'aem ' + str(get_int()) + ' ' + str(get_int()) + ' 1 ' + str(get_int()) + ' ' + str(get_int()))
+                    'aem ' + str(get_int()) + ' ' + str(random.randint(-1000, 1000)) + ' 1 ' + str(
+                        get_int()) + ' ' + str(get_int()))
         message_command_num -= 1
     ans.extend(str_am)
 
