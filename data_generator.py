@@ -233,6 +233,8 @@ def generate_data(input_file: str) -> None:
     ans.extend(str_am)
 
     # 接着插入查询(4/4)
+    if emoji.__len__()==0:
+        emoji.append(1)
     while query_command_num > 0:
         prob = random.random()
         if prob < 0.05:  # qv
