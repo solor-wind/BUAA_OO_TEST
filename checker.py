@@ -706,8 +706,8 @@ class Checker:
         type0 = int(order[3])
         person_id1 = int(order[4])
         person_id2_or_tag_id = int(order[5])
-        if type0 == 0 and (person_id1 not in self.id2Person.keys()) or (
-                person_id2_or_tag_id not in self.id2Person.keys()):
+        if type0 == 0 and ((person_id1 not in self.id2Person.keys()) or (
+                person_id2_or_tag_id not in self.id2Person.keys())):
             return "The person with this number does not exist"
         if type0 == 1 and person_id1 not in self.id2Person.keys():
             return "The person with this number does not exist"
