@@ -811,7 +811,7 @@ class Checker:
         limit = int(order[1])
         message_id_to_del = []
         for emoji_id in list(self.emojiId2Heat.keys()):
-            if self.emojiId2Heat[emoji_id] <= limit:
+            if self.emojiId2Heat[emoji_id] < limit:
                 del self.emojiId2Heat[emoji_id]
                 for message in self.id2Message.values():
                     if message.special_type == 'emoji' and int(message.special_character) == emoji_id:
