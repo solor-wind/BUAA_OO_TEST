@@ -144,7 +144,7 @@ def generate_data(input_file: str) -> None:
     red = set()
     emoji = []
     # 先加足够的消息
-    am_command_num = message_command_num / 2
+    am_command_num = message_command_num * 2 / 3
     message_command_num -= am_command_num
     while am_command_num > 0:
         prob = random.random()
@@ -204,10 +204,10 @@ def generate_data(input_file: str) -> None:
     red = list(red)
     while message_command_num > 0:
         prob = random.random()
-        if prob < 0.3:
+        if prob < 0.5:
             str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
                           'sm ' + str(random.choice(message)))
-        elif prob < 0.5:
+        elif prob < 0.6:
             str_am.insert(random.randint(int(str_am.__len__() / 2), str_am.__len__() - 1),
                           'cn ' + str(random.choice(node)))
         elif prob < 0.8:
@@ -233,7 +233,7 @@ def generate_data(input_file: str) -> None:
     ans.extend(str_am)
 
     # 接着插入查询(4/4)
-    if emoji.__len__()==0:
+    if emoji.__len__() == 0:
         emoji.append(1)
     while query_command_num > 0:
         prob = random.random()
