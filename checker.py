@@ -583,7 +583,12 @@ class Checker:
             else:
                 self.epiId2Num[person_id1] = 1
             return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
-        self.id2Message[messageId] = Message(messageId, social_value, type0, person_id1, person_id2_or_tag_id)
+        person1 = self.id2Person[person_id1]
+        if type0 == 0:
+            person2_or_tag = self.id2Person[person_id2_or_tag_id]
+        else:
+            person2_or_tag = person1.tags[person_id2_or_tag_id]
+        self.id2Message[messageId] = Message(messageId, social_value, type0, person1, person2_or_tag)
         return "Ok"
 
     def check_send_message(self, order) -> str:
@@ -596,10 +601,10 @@ class Checker:
                 self.minfId2Num[messageId] = 1
             return f"minf-{self.exception['minf']}, {messageId}-{self.minfId2Num[messageId]}"
         message = self.id2Message[messageId]
-        if message.type == 0 and not self.graph.has_edge(message.person_id1, message.person_id2):
+        if message.type == 0 and not self.graph.has_edge(message.person1.id, message.person2.id):
             self.exception["rnf"] += 1
-            id1 = min(message.person_id1, message.person_id2)
-            id2 = max(message.person_id1, message.person_id2)
+            id1 = min(message.person1.id, message.person2.id)
+            id2 = max(message.person1.id, message.person2.id)
             if id1 in self.rnfId2Num.keys():
                 self.rnfId2Num[id1] += 1
             else:
@@ -609,16 +614,16 @@ class Checker:
             else:
                 self.rnfId2Num[id2] = 1
             return f"rnf-{self.exception['rnf']}, {id1}-{self.rnfId2Num[id1]}, {id2}-{self.rnfId2Num[id2]}"
-        person1 = self.id2Person[message.person_id1]
-        if message.type == 1 and message.tag_id not in person1.tags.keys():
+        person1 = message.person1
+        if message.type == 1 and message.tag.tag_id not in person1.tags.keys():
             self.exception["tinf"] += 1
-            if message.tag_id in self.tinfId2Num.keys():
-                self.tinfId2Num[message.tag_id] += 1
+            if message.tag.tag_id in self.tinfId2Num.keys():
+                self.tinfId2Num[message.tag.tag_id] += 1
             else:
-                self.tinfId2Num[message.tag_id] = 1
-            return f"tinf-{self.exception['tinf']}, {message.tag_id}-{self.tinfId2Num[message.tag_id]}"
+                self.tinfId2Num[message.tag.tag_id] = 1
+            return f"tinf-{self.exception['tinf']}, {message.tag.tag_id}-{self.tinfId2Num[message.tag.tag_id]}"
         if message.type == 0:
-            person2 = self.id2Person[message.person_id2]
+            person2 = message.person2
             del self.id2Message[messageId]
             person2.add_message(message)
             person1.add_social_value(message.social_value)
@@ -629,7 +634,7 @@ class Checker:
             elif message.special_type == 'emoji':
                 self.emojiId2Heat[int(message.special_character)] += 1
         elif message.type == 1:
-            tag = person1.tags[message.tag_id]
+            tag = message.tag
             del self.id2Message[messageId]
             person1.add_social_value(message.social_value)
             for person in tag.persons.values():
@@ -696,7 +701,12 @@ class Checker:
             else:
                 self.epiId2Num[person_id1] = 1
             return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
-        self.id2Message[messageId] = Message(messageId, 5 * money, type0, person_id1, person_id2_or_tag_id,
+        person1 = self.id2Person[person_id1]
+        if type0 == 0:
+            person2_or_tag = self.id2Person[person_id2_or_tag_id]
+        else:
+            person2_or_tag = person1.tags[person_id2_or_tag_id]
+        self.id2Message[messageId] = Message(messageId, 5 * money, type0, person1, person2_or_tag,
                                              'red_envelope', str(money))
         return "Ok"
 
@@ -728,7 +738,12 @@ class Checker:
             else:
                 self.epiId2Num[person_id1] = 1
             return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
-        self.id2Message[messageId] = Message(messageId, len(string), type0, person_id1, person_id2_or_tag_id, 'notice',
+        person1 = self.id2Person[person_id1]
+        if type0 == 0:
+            person2_or_tag = self.id2Person[person_id2_or_tag_id]
+        else:
+            person2_or_tag = person1.tags[person_id2_or_tag_id]
+        self.id2Message[messageId] = Message(messageId, len(string), type0, person1, person2_or_tag, 'notice',
                                              string)
         return "Ok"
 
@@ -780,7 +795,12 @@ class Checker:
             else:
                 self.epiId2Num[person_id1] = 1
             return f"epi-{self.exception['epi']}, {person_id1}-{self.epiId2Num[person_id1]}"
-        self.id2Message[messageId] = Message(messageId, emojiNumber, type0, person_id1, person_id2_or_tag_id, 'emoji',
+        person1 = self.id2Person[person_id1]
+        if type0 == 0:
+            person2_or_tag = self.id2Person[person_id2_or_tag_id]
+        else:
+            person2_or_tag = person1.tags[person_id2_or_tag_id]
+        self.id2Message[messageId] = Message(messageId, emojiNumber, type0, person1, person2_or_tag, 'emoji',
                                              str(emojiNumber))
         return "Ok"
 
