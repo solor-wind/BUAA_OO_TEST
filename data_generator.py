@@ -24,7 +24,7 @@ def generate_data(input_file: str) -> None:
 
     # 先建立图(1/4)
     # 一半的指令用于生产稠密图，另一半用于加剩下的节点、修改节点、随机加边
-    dense_node_num = int((1 + (1 + 4 * graph_command_num) ** 0.5) / 2)  # 稠密图节点数
+    dense_node_num = int((1.5 + (1 + 4 * graph_command_num) ** 0.5) / 2)  # 稠密图节点数
     edge_num = dense_node_num * (dense_node_num - 1) / 2
     dense_node_num += 1
     graph = Graph.graph(dense_node_num, edge_num, weight_limit=(1, 200))
