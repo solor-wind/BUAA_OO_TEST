@@ -41,9 +41,18 @@ class Library:
         同时更新预约处的书
         """
         self.datetime=datetime
-        for i in range(0,self.ao.__len__()):
-            if (self.datetime-self.ao[i][0]).days>=5:
-                self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
+    def open_check(self)->str:
+        """
+        开馆整理后调用
+        检查借还处不应该有书，预约处不应该有逾期的书
+        """
+        for i in self.bro.values():
+            if i!=0:
+                return '借还处不应有书'
+        for i in range(0, self.ao.__len__()):
+            if (self.datetime - self.ao[i][0]).days >= 5:
+                return '预约处不应有逾期的书'
+
     def borrow(self,personId:str,bookId:str)->str:
         """
         返回'accept'或'reject'
