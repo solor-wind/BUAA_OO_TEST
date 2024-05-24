@@ -141,17 +141,21 @@ class Library:
             elif bookId!=tmp_match.group(4):
                 return '查询书籍错误'
             if tmp_match.group(3)=='borrowed':
-                if self.borrow(personId,bookId)!=tmp_match.group(1):
-                    return 'accept或reject不匹配'
+                result=self.borrow(personId,bookId)
+                if result!=tmp_match.group(1):
+                    return '应为 '+result
             if tmp_match.group(3)=='ordered':
-                if self.order(personId,bookId)!=tmp_match.group(1):
-                    return 'accept或reject不匹配'
+                result=self.order(personId,bookId)
+                if result!=tmp_match.group(1):
+                    return '应为 '+result
             if tmp_match.group(3)=='returned':
-                if self.return_book(personId,bookId)!=tmp_match.group(1):
-                    return 'accept或reject不匹配'
+                result=self.return_book(personId,bookId)
+                if result!=tmp_match.group(1):
+                    return '应为 '+result
             if tmp_match.group(3)=='picked':
-                if self.pick(personId,bookId)!=tmp_match.group(1):
-                    return 'accept或reject不匹配'
+                result=self.pick(personId,bookId)
+                if result!=tmp_match.group(1):
+                    return '应为 '+result
         return ''
 
     def orgnize(self,isOpenOrgnize:bool,command:str)->str:
@@ -261,20 +265,20 @@ def check():
                 for k in range(1,output_command.__len__()):
                     result=library.orgnize(True,output_command[k])
                     if result!='':
-                        return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+                        return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
             result=library.open_check()
             if result!='':
-                return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+                return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
         elif 'CLOSE' in input_command:
             if int(output_command[0])>0:
                 for k in range(1,output_command.__len__()):
                     result=library.orgnize(False,output_command[k])
                     if result!='':
-                        return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+                        return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
         else:
             result=library.action(input_command,output_command[0])
             if result != '':
-                return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+                return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
     return "Accepted!"
 
 if __name__ == '__main__':
