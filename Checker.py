@@ -1,5 +1,6 @@
 from datetime import date,timedelta
 import re
+import json
 
 class Person:
     def __init__(self,id):
@@ -52,10 +53,10 @@ class Library:
         """
         for i in self.bro.keys():
             if self.bro[i]!=0:
-                return '借还处不应有书'+i
+                return '开馆整理后借还处不应有书'+i
         for i in range(0, self.ao.__len__()):
             if (self.datetime - self.ao[i][0]).days >= 5:
-                return '预约处不应有逾期的书'+str(self.ao[i])
+                return '开馆整理后预约处不应有逾期的书'+str(self.ao[i])
         return ''
 
     def borrow(self,personId:str,bookId:str)->str:
@@ -229,4 +230,52 @@ class Library:
             return '起点和终点重复'
         return ''
 
-library=Library()
+def check():
+    config=json.load(open('config.json',encoding='utf-8'))
+    input_file=config['input_file']
+    output_file=config['output_file']
+    input=open(input_file,'r',encoding='utf-8').readlines()
+    output=open(output_file,'r',encoding='utf-8').readlines()
+    library=Library()
+
+    i=1;j=0
+    while i<=int(input[0]):
+        tmp_match = re.match('([ABC]-\d{4}) (\d+).*', input[i])
+        library.add_book(tmp_match.group(1),int(tmp_match.group(2)))
+        i+=1
+    while i<input.__len__() and j<output.__len__():
+        input_command = input[i]
+        i+=1
+        output_command = []
+        output_command.append(output[j])
+        j+=1
+        if not('-' in output_command[0] or int(output_command[0])==0):
+            for k in range(0,int(output_command[0])):
+                output_command.append(output[j+k])
+            j+=int(output_command[0])
+        if 'OPEN' in input_command:
+            tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
+            time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
+            library.update(time)
+            if int(output_command[0])>0:
+                for k in range(1,output_command.__len__()):
+                    result=library.orgnize(True,output_command[k])
+                    if result!='':
+                        return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+            result=library.open_check()
+            if result!='':
+                return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+        elif 'CLOSE' in input_command:
+            if int(output_command[0])>0:
+                for k in range(1,output_command.__len__()):
+                    result=library.orgnize(False,output_command[k])
+                    if result!='':
+                        return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+        else:
+            result=library.action(input_command,output_command[0])
+            if result != '':
+                return result+' 输入第'+str(i+1)+'行 输出第'+str(j+1)+'行'
+    return "Accepted!"
+
+if __name__ == '__main__':
+    print(check())

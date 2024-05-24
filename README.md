@@ -4,7 +4,7 @@
 
 用带有官方包的代码构建jar包
 
-暂不支持对单独文件的正确性检验
+支持对单独文件的正确性检验
 
 出现bug可以在github提出issue，我们尽快解决
 
@@ -49,6 +49,13 @@ return_prob：对于每个成功的borrow，生成归还指令的概率
 pick_1_prob：对于每个成功的order，生成1个pick指令的概率
 
 pick_2_prob：对于每个成功的order，生成2个pick指令的概率
+
+### 单文件检验
+input_file: 输入文件路径
+
+output_file: 输出文件路径
+
+将完整输入与完整输出放置到两个文件中，并填写config中以上2个 ，运行Checker.py即可
 
 ## 数据生成逻辑
 1. 在一定天数范围内随机生成基础指令
