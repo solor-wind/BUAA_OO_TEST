@@ -15,5 +15,8 @@
   "order_prob": 0.3,
   "return_prob": 0.75,
   "pick_1_prob": 0.25,
-  "pick_2_prob": 0.5
+  "pick_2_prob": 0.5,
+
+  "input_file": "input.txt",
+  "output_file": "output.txt"
 }

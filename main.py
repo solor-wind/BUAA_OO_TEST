@@ -81,7 +81,7 @@ def process_function(case_id) -> str:
         elif 'CLOSE' in input_command:
             if int(output_command[0])>0:
                 for i in range(1,output_command.__len__()):
-                    result=library.orgnize(True,output_command[i])
+                    result=library.orgnize(False,output_command[i])
                     if result!='':
                         return result
         else:
