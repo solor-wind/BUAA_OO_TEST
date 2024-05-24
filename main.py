@@ -67,7 +67,7 @@ def process_function(case_id) -> str:
             f_out.write(i)
             generator.add_command(i)
         if 'OPEN' in input_command:
-            tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
+            tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
             time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
             library.update(time)
             if int(output_command[0])>0:
