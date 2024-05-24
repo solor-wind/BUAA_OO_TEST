@@ -1,0 +1,15 @@
+{
+  "begin_date": "2024-1-1",
+  "end_date": "2024-2-10",
+  "max_num_of_days_with_command": 10,
+  "basic_command_num": 100,
+  "max_num_of_book_identifier": 5,
+  "max_num_of_book_for_each_identifier": 3,
+  "max_num_of_person": 5,
+  "borrow_prob": 0.5,
+  "query_prob": 0.2,
+  "order_prob": 0.3,
+  "return_prob": 0.75,
+  "pick_1_prob": 0.25,
+  "pick_2_prob": 0.5
+}
