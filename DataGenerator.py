@@ -32,7 +32,7 @@ def generate_books_specified(identifier) -> dict:
     identifiers_num = random.randint(1, num_identifier)
     identifiers = random.sample(range(1, round(identifiers_num + 10)), identifiers_num)
     books = [f"{identifier}-{number:04}" for number in identifiers]
-    nums = random.sample(range(1, num_book), len(books))
+    nums = random.choices(range(1, num_book), k=len(books))
     return dict(zip(books, nums))
 
 
