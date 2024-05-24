@@ -136,9 +136,9 @@ class data_generator:
         """
         global e_date, pick_1_prob, pick_2_prob, return_prob
         if 'accept' in output:
-            date_str = output.split(" ")[0]
-            book_id = output.split(" ")[-1]
-            person_id = output.split(" ")[2]
+            date_str = output.split(" ")[0].strip("\n")
+            book_id = output.split(" ")[-1].strip("\n")
+            person_id = output.split(" ")[2].strip("\n")
             date = datetime.strptime(date_str, "[%Y-%m-%d]")
             end_date = datetime.strptime(e_date, "%Y-%m-%d")
             if 'borrowed' in output:
