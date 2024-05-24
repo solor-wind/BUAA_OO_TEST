@@ -1,13 +1,27 @@
-## history使用说明
+## 使用说明
 
-history包含两个类：Library和Person，以及一个Library的实例`library`
+填写config中信息（必填jar_path）
 
-使用`add_book`方法以初始化书籍，每次图书馆开门时调用`update`以更新日期、预约处书籍情况。
-借阅者操作时调用的对应方法返回是否接受，整理时返回错误信息或空字符串
+用带有官方包的代码构建jar包
 
-library具体属性见注释
+暂不支持对单独文件的正确性检验
+
+出现bug可以在github提出issue，我们尽快解决
+
+*点点star谢谢（*
 
 ## config说明：
+
+### 测试相关
+test_num：为测试样例数
+
+basic_command_num：为指令数
+
+jar_path：为jar包的路径
+
+del_temp_file：删除正确样例
+
+### 数据生成相关
 基础指令:query, borrow, order
 
 生成指令:pick, return
