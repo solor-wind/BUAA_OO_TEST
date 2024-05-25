@@ -67,3 +67,9 @@ output_file: 输出文件路径
 max_num_of_days_with_command需大于begin_date和end_date的差值
 
 对于return指令可能有bug，我以添加调试信息，不影响评测
+
+## 关于Bug
+
+目前数据生成极小有bug，可能会在一条borrow指令后生成两条return指令从而出错。bug原因正在排查（排查不出啊！！！！！！！！）
+
+如果知道bug原因可以与我联系
