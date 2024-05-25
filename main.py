@@ -69,7 +69,7 @@ def process_function(case_id) -> str:
         if 'OPEN' in input_command:
             tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
             time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
-            library.update(time)
+            library.update(False,time)
             if int(output_command[0])>0:
                 for i in range(1,output_command.__len__()):
                     result=library.orgnize(True,output_command[i])
@@ -79,6 +79,7 @@ def process_function(case_id) -> str:
             if result!='':
                 return result
         elif 'CLOSE' in input_command:
+            library.update(True, time)
             if int(output_command[0])>0:
                 for i in range(1,output_command.__len__()):
                     result=library.orgnize(False,output_command[i])

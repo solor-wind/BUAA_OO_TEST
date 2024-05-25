@@ -37,15 +37,20 @@ class Library:
     def add_book(self,book:str,count:int=1):
         self.bs[book]=count
         self.bro[book]=0
-    def update(self,datetime:date):
+    def update(self,isclose:bool,datetime:date):
         """
         每次开馆时更新当前时间
-        同时更新预约处的书
+        闭馆时更新预约处的书
         """
-        self.datetime=datetime
-        for i in range(0,self.ao.__len__()):
-            if (self.datetime-self.ao[i][0]).days>=5:
-                self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
+        if isclose:
+            for i in range(0,self.ao.__len__()):
+                if (self.datetime-self.ao[i][0]).days>=4:
+                    self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
+        else:
+            self.datetime=datetime
+            for i in range(0,self.ao.__len__()):
+                if (self.datetime-self.ao[i][0]).days>=5:
+                    self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
     def open_check(self)->str:
         """
         开馆整理后调用
@@ -164,6 +169,10 @@ class Library:
         返回错误信息，否则返回空字符串
         """
         ffrom='';to='';bookId='';personId=''
+        tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', command)
+        time1 = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
+        if time1 != self.datetime:
+            return '时间错误'
         try:
             if 'for' in command:
                 tmp_match = re.match('\[\d{4}-\d{2}-\d{2}\] move ([ABC]-\d{4}) from (\w+) to (\w+) for (\w+)',command)
@@ -260,7 +269,7 @@ def check():
         if 'OPEN' in input_command:
             tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
             time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
-            library.update(time)
+            library.update(False,time)
             if int(output_command[0])>0:
                 for k in range(1,output_command.__len__()):
                     result=library.orgnize(True,output_command[k])
@@ -270,6 +279,7 @@ def check():
             if result!='':
                 return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
         elif 'CLOSE' in input_command:
+            library.update(True, time)
             if int(output_command[0])>0:
                 for k in range(1,output_command.__len__()):
                     result=library.orgnize(False,output_command[k])
