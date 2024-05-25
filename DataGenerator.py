@@ -157,7 +157,7 @@ class data_generator:
                         self.date2commands = dict(sorted(self.date2commands.items()))
             if 'ordered' in output:
                 prob = random.random()
-                if prob < pick_1_prob:  # 生成两条pick
+                if prob < pick_2_prob:  # 生成两条pick
                     command = self.generate_pick(person_id, book_id)
                     for i in range(2):
                         next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())

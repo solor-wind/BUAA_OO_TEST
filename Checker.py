@@ -169,7 +169,7 @@ class Library:
         返回错误信息，否则返回空字符串
         """
         ffrom='';to='';bookId='';personId=''
-        tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', command)
+        tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', command)
         time1 = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
         if time1 != self.datetime:
             return '时间错误'

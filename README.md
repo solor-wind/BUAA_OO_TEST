@@ -65,3 +65,5 @@ output_file: 输出文件路径
 为保证数据的强度，不建议将时间范围、max_num_of_book_identifier、max_num_of_book_for_each_identifier、max_num_of_person设置过大
 
 max_num_of_days_with_command需大于begin_date和end_date的差值
+
+对于return指令可能有bug，我以添加调试信息，不影响评测
