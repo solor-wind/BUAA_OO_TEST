@@ -123,24 +123,24 @@ class Library:
         return self.bs[bookId]
 
     def action(self,input:str,output:str)->str:
-        tmp_match=re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', input)
+        tmp_match=re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input)
         time1 = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
-        tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', output)
+        tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', output)
         time2 = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
         if time1!=time2:
             return '时间错误'
-        tmp_match=re.match('\[(\d{4})-(\d{2})-(\d{2})\] (\w+) (\w+) ([ABC]-\d{4})', input)
+        tmp_match=re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\w+) (\w+) ([ABC]-\d{4})', input)
         personId = tmp_match.group(4)
         bookId = tmp_match.group(6)
         command = tmp_match.group(5)
         if 'queried' in input:
-            tmp_match = re.match('\[\d{4}-\d{2}-\d{2}\] ([ABC]-\d{4}) (\d+)', output)
+            tmp_match = re.match(r'\[\d{4}-\d{2}-\d{2}\] ([ABC]-\d{4}) (\d+)', output)
             if bookId!=tmp_match.group(1):
                 return '查询书籍id错误'
             elif self.query(bookId)!=int(tmp_match.group(2)):
                 return '查询书籍数量错误'
         else:
-            tmp_match = re.match('\[\d{4}-\d{2}-\d{2}\] \[(\w+)\] (\w+) (\w+) ([ABC]-\d{4})', output)
+            tmp_match = re.match(r'\[\d{4}-\d{2}-\d{2}\] \[(\w+)\] (\w+) (\w+) ([ABC]-\d{4})', output)
             if personId!=tmp_match.group(2):
                 return '查询学号错误'
             elif bookId!=tmp_match.group(4):
@@ -175,13 +175,13 @@ class Library:
             return '时间错误'
         try:
             if 'for' in command:
-                tmp_match = re.match('\[\d{4}-\d{2}-\d{2}\] move ([ABC]-\d{4}) from (\w+) to (\w+) for (\w+)',command)
+                tmp_match = re.match(r'\[\d{4}-\d{2}-\d{2}\] move ([ABC]-\d{4}) from (\w+) to (\w+) for (\w+)',command)
                 bookId=tmp_match.group(1)
                 ffrom=tmp_match.group(2)
                 to=tmp_match.group(3)
                 personId=tmp_match.group(4)
             else:
-                tmp_match = re.match('\[\d{4}-\d{2}-\d{2}\] move ([ABC]-\d{4}) from (\w+) to (\w+)', command)
+                tmp_match = re.match(r'\[\d{4}-\d{2}-\d{2}\] move ([ABC]-\d{4}) from (\w+) to (\w+)', command)
                 bookId = tmp_match.group(1)
                 ffrom = tmp_match.group(2)
                 to = tmp_match.group(3)
@@ -253,7 +253,7 @@ def check():
 
     i=1;j=0
     while i<=int(input[0]):
-        tmp_match = re.match('([ABC]-\d{4}) (\d+).*', input[i])
+        tmp_match = re.match(r'([ABC]-\d{4}) (\d+).*', input[i])
         library.add_book(tmp_match.group(1),int(tmp_match.group(2)))
         i+=1
     while i<input.__len__() and j<output.__len__():
@@ -267,7 +267,7 @@ def check():
                 output_command.append(output[j+k])
             j+=int(output_command[0])
         if 'OPEN' in input_command:
-            tmp_match = re.match('\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
+            tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
             time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
             library.update(False,time)
             if int(output_command[0])>0:
