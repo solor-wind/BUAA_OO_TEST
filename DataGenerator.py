@@ -147,7 +147,7 @@ class data_generator:
                     next_date_str = str((date + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
                     if next_date_str == date_str:
-                        insert_place = random.randint(self.index + 1, len(self.date2commands[date_str]))
+                        insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                         self.date2commands[date_str].insert(insert_place, command)
                     elif next_date_str in self.date2commands:
                         insert_place = random.randint(0, len(self.date2commands[next_date_str]))
@@ -162,7 +162,7 @@ class data_generator:
                     for i in range(2):
                         next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
                         if next_date_str == date_str:
-                            insert_place = random.randint(self.index + 1, len(self.date2commands[date_str]))
+                            insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                             self.date2commands[date_str].insert(insert_place, command)
                         elif next_date_str in self.date2commands:
                             insert_place = random.randint(0, len(self.date2commands[next_date_str]))
@@ -174,7 +174,7 @@ class data_generator:
                     command = self.generate_pick(person_id, book_id)
                     next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
                     if next_date_str == date_str:
-                        insert_place = random.randint(self.index + 1, len(self.date2commands[date_str]))
+                        insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                         self.date2commands[date_str].insert(insert_place, command)
                     elif next_date_str in self.date2commands:
                         insert_place = random.randint(0, len(self.date2commands[next_date_str]))
