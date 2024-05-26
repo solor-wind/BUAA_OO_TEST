@@ -87,7 +87,7 @@ class Library:
         if personId not in self.persons:
             return '查无此人'
         elif bookId not in self.persons[personId].books:
-            return '此人无此书'
+            return '数据生成有误，请忽略此条数据'
         self.bro[bookId]+=1
         self.persons[personId].del_book(bookId)
         return 'accept'
