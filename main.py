@@ -47,50 +47,56 @@ def process_function(case_id) -> str:
     f_in = open(f"workspace/{case_id}/input.txt", 'w', encoding='utf-8')
     f_out = open(f"workspace/{case_id}/output.txt", 'w', encoding='utf-8')
 
-    for command in generator.init_command_list:
-        f_in.write(command)
-        proc.stdin.write(command)
-        proc.stdin.flush()
-    while True:
-        input_command = generator.get_next_command()
-        if input_command == "":
-            break
-        f_in.write(input_command)
-        proc.stdin.write(input_command)
-        proc.stdin.flush()
-        output_command = []#proc.stdout.readline()
-        output_command.append(proc.stdout.readline())
-        if not('-' in output_command[0] or int(output_command[0])==0):
-            for i in range(0,int(output_command[0])):
-                output_command.append(proc.stdout.readline())
-        for i in output_command:
-            f_out.write(i)
-            generator.add_command(i)
-        if 'OPEN' in input_command:
-            tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
-            time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
-            library.update(False,time)
-            if int(output_command[0])>0:
-                for i in range(1,output_command.__len__()):
-                    result=library.orgnize(True,output_command[i])
-                    if result!='':
-                        return result
-            result=library.open_check()
-            if result!='':
-                return result
-        elif 'CLOSE' in input_command:
-            library.update(True, time)
-            if int(output_command[0])>0:
-                for i in range(1,output_command.__len__()):
-                    result=library.orgnize(False,output_command[i])
-                    if result!='':
-                        return result
-        else:
-            result=library.action(input_command,output_command[0])
-            if result != '':
-                return result
-    return "Accepted!"
-
+    try:
+        for command in generator.init_command_list:
+            f_in.write(command)
+            proc.stdin.write(command)
+            proc.stdin.flush()
+        while True:
+            input_command = generator.get_next_command()
+            if input_command == "":
+                break
+            f_in.write(input_command)
+            proc.stdin.write(input_command)
+            proc.stdin.flush()
+            output_command = []#proc.stdout.readline()
+            output_command.append(proc.stdout.readline())
+            if not('-' in output_command[0] or int(output_command[0])==0):
+                for i in range(0,int(output_command[0])):
+                    output_command.append(proc.stdout.readline())
+            for i in output_command:
+                f_out.write(i)
+                generator.add_command(i)
+            if 'OPEN' in input_command:
+                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
+                time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
+                library.update(False,time)
+                if int(output_command[0])>0:
+                    for i in range(1,output_command.__len__()):
+                        result=library.orgnize(True,output_command[i])
+                        if result!='':
+                            return result
+                result=library.open_check()
+                if result!='':
+                    return result
+            elif 'CLOSE' in input_command:
+                library.update(True, time)
+                if int(output_command[0])>0:
+                    for i in range(1,output_command.__len__()):
+                        result=library.orgnize(False,output_command[i])
+                        if result!='':
+                            return result
+            else:
+                result=library.action(input_command,output_command[0])
+                if result != '':
+                    return result
+        return "Accepted!"
+    finally:
+        proc.stdin.close()
+        proc.stdout.close()
+        proc.stderr.close()
+        f_in.close()
+        f_out.close()
 
 def mkdir(path):
     path = Path(path)
