@@ -61,9 +61,12 @@ def process_function(case_id) -> str:
             proc.stdin.flush()
             output_command = []#proc.stdout.readline()
             output_command.append(proc.stdout.readline())
-            if not('-' in output_command[0] or int(output_command[0])==0):
-                for i in range(0,int(output_command[0])):
-                    output_command.append(proc.stdout.readline())
+            try:
+                if not('-' in output_command[0] or int(output_command[0])==0):
+                    for i in range(0,int(output_command[0])):
+                        output_command.append(proc.stdout.readline())
+            except:
+                return '未获取到正确的输出'
             for i in output_command:
                 f_out.write(i)
                 generator.add_command(i)
