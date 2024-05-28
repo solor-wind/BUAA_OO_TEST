@@ -15,8 +15,8 @@
   "order_prob": 0.3,
   "donate_prob" : 0.1,
   "renew_prob" : 0.5,
-  "return_prob": 0.75,
-  "pick_1_prob": 0.25,
+  "return_prob": 0.8,
+  "pick_1_prob": 0.3,
   "pick_2_prob": 0.5,
 
   "input_file": "input.txt",

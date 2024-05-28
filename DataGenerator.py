@@ -186,26 +186,32 @@ class data_generator:
                         elif 'B' in book_id:
                             limit_days = 30
                         elif 'CU' in book_id:
-                            limit_days = 60
-                        else:
                             limit_days = 14
+                        else:
+                            limit_days = 60
                         limit_date = min(date + timedelta(days=limit_days), end_date)
                         next_date_str = str(max((limit_date - timedelta(days=random.randint(0, 5))), date).date())
                         command = self.generate_renew(person_id, book_id)
                         self.randomly_insert(command, date_str, next_date_str)
-                elif prob1 < return_prob and prob2 < renew_prob:  # 还书并续借
-                    if 'BU' in book_id:
-                        limit_days = 7
-                    elif 'B' in book_id:
-                        limit_days = 30
-                    elif 'CU' in book_id:
-                        limit_days = 60
+                elif prob1 < return_prob and prob2 < renew_prob:  # 续借并还书
+                    if random.random() < 0.5:
+                        delta = end_date - date
+                        next_date_str = str((date + timedelta(days=random.randint(0, delta.days))).date())
+                        command = self.generate_renew(person_id, book_id)
+                        begin_date_str, begin_index = self.randomly_insert(command, date_str, next_date_str)  # 生成续借
                     else:
-                        limit_days = 14
-                    limit_date = min(date + timedelta(days=limit_days), end_date)
-                    next_date_str = str(max((limit_date - timedelta(days=random.randint(0, 5))), date).date())
-                    command = self.generate_renew(person_id, book_id)
-                    begin_date_str, begin_index = self.randomly_insert(command, date_str, next_date_str)  # 生成续借
+                        if 'BU' in book_id:
+                            limit_days = 7
+                        elif 'B' in book_id:
+                            limit_days = 30
+                        elif 'CU' in book_id:
+                            limit_days = 14
+                        else:
+                            limit_days = 60
+                        limit_date = min(date + timedelta(days=limit_days), end_date)
+                        next_date_str = str(max((limit_date - timedelta(days=random.randint(0, 5))), date).date())
+                        command = self.generate_renew(person_id, book_id)
+                        begin_date_str, begin_index = self.randomly_insert(command, date_str, next_date_str)  # 生成续借
                     delta = end_date - begin_date_str
                     next_date_str = str((begin_date_str + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
