@@ -142,7 +142,7 @@ class data_generator:
             date = datetime.strptime(date_str, "[%Y-%m-%d]")
             date_str = str(date.date())
             end_date = datetime.strptime(e_date, "%Y-%m-%d")
-            if 'borrowed' in output:
+            if 'borrowed' in output and "picked" in output:
                 if random.random() < return_prob:
                     delta = end_date - date
                     next_date_str = str((date + timedelta(days=random.randint(0, delta.days))).date())
