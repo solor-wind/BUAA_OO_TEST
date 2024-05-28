@@ -212,7 +212,7 @@ class data_generator:
                         next_date_str = str(max((limit_date - timedelta(days=random.randint(0, 5))), date).date())
                         command = self.generate_renew(person_id, book_id)
                         begin_date_str, begin_index = self.randomly_insert(command, date_str, next_date_str)  # 生成续借
-                    delta = end_date - datetime.strptime(begin_date_str, "[%Y-%m-%d]")
+                    delta = end_date - datetime.strptime(begin_date_str, "%Y-%m-%d")
                     next_date_str = str((begin_date_str + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
                     self.randomly_insert(command, begin_date_str, next_date_str, begin_index)  # 生成还书
