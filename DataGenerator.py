@@ -140,6 +140,7 @@ class data_generator:
             book_id = output.split(" ")[-1].strip("\n")
             person_id = output.split(" ")[2].strip("\n")
             date = datetime.strptime(date_str, "[%Y-%m-%d]")
+            date_str = str(date.date())
             end_date = datetime.strptime(e_date, "%Y-%m-%d")
             if 'borrowed' in output:
                 if random.random() < return_prob:
