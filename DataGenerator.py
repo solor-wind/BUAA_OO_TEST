@@ -137,7 +137,7 @@ class data_generator:
             type = random.choice(['AU', 'BU', 'CU'])
             number = random.randint(0, 9999)
             book = type.rstrip("U") + f"-{number:04}"
-            if book in self.books:
+            if book in self.books or f"{type}-{number:04}" in self.books:
                 continue
             else:
                 self.books.add(f"{type}-{number:04}")
@@ -217,7 +217,6 @@ class data_generator:
                     next_date_str = str((begin_date + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
                     self.randomly_insert(command, begin_date_str, next_date_str, begin_index + 1)  # 生成还书
-
             if 'ordered' in output:  # 生成取书命令
                 prob = random.random()
                 if prob < pick_2_prob:  # 生成两条pick
