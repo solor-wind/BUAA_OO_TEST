@@ -46,6 +46,10 @@ query_prob：生成查询概率概率
 
 order_prob：生成预约概率
 
+donate_prob：生成捐赠概率
+
+renew_prob：生成续借概率
+
 return_prob：对于每个成功的borrow，生成归还指令的概率
 
 pick_1_prob：对于每个成功的order，生成1个pick指令的概率
