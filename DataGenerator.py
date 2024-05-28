@@ -117,7 +117,7 @@ class data_generator:
             self.date2commands[date] = tmp_commands.pop(0)
 
     def generate_query(self) -> str:
-        person_id = random.choice(list(self.books))
+        person_id = random.choice(list(self.library.persons.keys()))
         book = random.choice(list(self.books))
         return f"{person_id} queried {book}\n"
 
