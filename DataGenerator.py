@@ -297,7 +297,7 @@ class data_generator:
         return next_date_str, insert_place
 
     def update_U_book(self, book_id):
-        for key, value in self.date2commands:
+        for key, value in self.date2commands.items():
             for i, command in enumerate(value):  # 使用enumerate获取列表中的索引和元素
                 if book_id in command:
                     value[i] = command.replace("U", '')
