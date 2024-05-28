@@ -294,6 +294,7 @@ class Library:
             if self.bro[bookId]==0:
                 self.bro.pop(bookId)
             if 'U' in bookId:
+                self.bdc.pop(bookId)
                 bookId = bookId.replace('U','')
             if bookId in self.bs:
                 self.bs[bookId]+=1
