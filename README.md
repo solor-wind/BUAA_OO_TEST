@@ -64,14 +64,8 @@ output_file: 输出文件路径
 2. 对成功的某些特定基础指令，生成生成指令，其中return指令将在当前天数和截止天数间随机生成； pick指令将在当前天数和(当前天数+12)间随机生成
 
 ## 注意
-为保证数据的强度，不建议将时间范围、max_num_of_book_identifier、max_num_of_book_for_each_identifier、max_num_of_person设置过大
+为保证数据的强度，不建议将max_num_of_book_identifier、max_num_of_book_for_each_identifier、max_num_of_person设置过大
 
 max_num_of_days_with_command需大于begin_date和end_date的差值
 
 对于return指令可能有bug，我以添加调试信息，不影响评测
-
-## 关于Bug
-
-目前数据生成极小有bug，可能会在一条borrow指令后生成两条return指令从而出错。bug原因正在排查（排查不出啊！！！！！！！！）
-
-如果知道bug原因可以与我联系
