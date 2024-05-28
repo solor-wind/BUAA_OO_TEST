@@ -161,7 +161,7 @@ class data_generator:
                 if prob < pick_2_prob:  # 生成两条pick
                     command = self.generate_pick(person_id, book_id)
                     for i in range(2):
-                        next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
+                        next_date_str = str((date + timedelta(days=random.randint(0, min(12, (end_date - date).days)))).date())
                         if next_date_str == date_str:
                             insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                             self.date2commands[date_str].insert(insert_place, command)
@@ -173,7 +173,7 @@ class data_generator:
                             self.date2commands = dict(sorted(self.date2commands.items()))
                 elif prob < pick_1_prob + pick_2_prob:  # 生成一条pick
                     command = self.generate_pick(person_id, book_id)
-                    next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
+                    next_date_str = str((date + timedelta(days=random.randint(0, min(12, (end_date - date).days)))).date())
                     if next_date_str == date_str:
                         insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                         self.date2commands[date_str].insert(insert_place, command)
