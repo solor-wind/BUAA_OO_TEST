@@ -216,7 +216,7 @@ class data_generator:
                     delta = end_date - begin_date
                     next_date_str = str((begin_date + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
-                    self.randomly_insert(command, begin_date_str, next_date_str, begin_index)  # 生成还书
+                    self.randomly_insert(command, begin_date_str, next_date_str, begin_index + 1)  # 生成还书
 
             if 'ordered' in output:  # 生成取书命令
                 prob = random.random()
