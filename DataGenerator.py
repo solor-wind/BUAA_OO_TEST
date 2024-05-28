@@ -136,11 +136,11 @@ class data_generator:
         while True:
             type = random.choice(['AU', 'BU', 'CU'])
             number = random.randint(0, 9999)
-            book = type.rstrip("U") + f"-{number: 04}"
+            book = type.rstrip("U") + f"-{number:04}"
             if book in self.books:
                 continue
             else:
-                self.books.add(book)
+                self.books.add(f"{type}-{number:04}")
                 return f"{person_id} donated {type}-{number:04}\n"
 
     def generate_pick(self, person_id, book_id):
@@ -212,7 +212,7 @@ class data_generator:
                         next_date_str = str(max((limit_date - timedelta(days=random.randint(0, 5))), date).date())
                         command = self.generate_renew(person_id, book_id)
                         begin_date_str, begin_index = self.randomly_insert(command, date_str, next_date_str)  # 生成续借
-                    delta = end_date - begin_date_str
+                    delta = end_date - datetime.strptime(begin_date_str, "[%Y-%m-%d]")
                     next_date_str = str((begin_date_str + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
                     self.randomly_insert(command, begin_date_str, next_date_str, begin_index)  # 生成还书
