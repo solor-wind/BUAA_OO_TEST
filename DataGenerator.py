@@ -142,8 +142,9 @@ class data_generator:
             date = datetime.strptime(date_str, "[%Y-%m-%d]")
             date_str = str(date.date())
             end_date = datetime.strptime(e_date, "%Y-%m-%d")
-            if 'borrowed' in output:
+            if 'borrowed' in output or "picked" in output:
                 if random.random() < return_prob:
+                    self.end_date = end_date.date().__str__()
                     delta = end_date - date
                     next_date_str = str((date + timedelta(days=random.randint(0, delta.days))).date())
                     command = self.generate_return(person_id, book_id)
@@ -161,7 +162,7 @@ class data_generator:
                 if prob < pick_2_prob:  # 生成两条pick
                     command = self.generate_pick(person_id, book_id)
                     for i in range(2):
-                        next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
+                        next_date_str = str((date + timedelta(days=random.randint(0, min(12, (end_date - date).days)))).date())
                         if next_date_str == date_str:
                             insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                             self.date2commands[date_str].insert(insert_place, command)
@@ -173,7 +174,7 @@ class data_generator:
                             self.date2commands = dict(sorted(self.date2commands.items()))
                 elif prob < pick_1_prob + pick_2_prob:  # 生成一条pick
                     command = self.generate_pick(person_id, book_id)
-                    next_date_str = str((date + timedelta(days=random.randint(0, 12))).date())
+                    next_date_str = str((date + timedelta(days=random.randint(0, min(12, (end_date - date).days)))).date())
                     if next_date_str == date_str:
                         insert_place = random.randint(self.index, len(self.date2commands[date_str]))
                         self.date2commands[date_str].insert(insert_place, command)
@@ -189,6 +190,8 @@ class data_generator:
         获取下一个命令
         :return: 下一个命令
         """
+        if self.index == len(self.date2commands[self.date]):
+            self.close_flag = True
         if self.end_flag:
             return ""
         if self.close_flag:
@@ -209,8 +212,6 @@ class data_generator:
         else:
             command = f"[{self.date}] {self.date2commands[self.date][self.index]}"
             self.index += 1
-            if self.index == len(self.date2commands[self.date]):
-                self.close_flag = True
         self.commands.append(command)
         return command
 
