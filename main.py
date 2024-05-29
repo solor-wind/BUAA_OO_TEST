@@ -66,7 +66,7 @@ def process_function(case_id) -> str:
                     for i in range(0,int(output_command[0])):
                         output_command.append(proc.stdout.readline())
             except:
-                return '未获取到正确的输出'
+                return '未获取到正确的输出:'+output_command[0]
             for i in output_command:
                 f_out.write(i)
                 generator.add_command(i)
