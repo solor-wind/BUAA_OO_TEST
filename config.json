@@ -13,7 +13,7 @@
   "borrow_prob": 0.4,
   "query_prob": 0.2,
   "order_prob": 0.3,
-  "donate_prob" : 0.1,
+  "donate_prob" : 0.03,
   "renew_prob" : 0.5,
   "return_prob": 0.8,
   "pick_1_prob": 0.3,
