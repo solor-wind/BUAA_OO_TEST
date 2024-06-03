@@ -119,7 +119,10 @@ class data_generator:
     def generate_query(self) -> str:
         person_id = random.choice(list(self.library.persons.keys()))
         book = random.choice(list(self.books))
-        return f"{person_id} queried {book}\n"
+        if random.random() < 0.5:
+            return f"{person_id} queried {book}\n"
+        else:
+            return f"{person_id} queried credit score\n"
 
     def generate_borrow(self) -> str:
         person_id = random.choice(list(self.library.persons.keys()))
