@@ -89,6 +89,16 @@ def process_function(case_id) -> str:
                         result=library.orgnize(False,output_command[i])
                         if result!='':
                             return result
+            elif 'credit' in input_command:
+                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}).*', input_command)
+                personId = tmp_match.group(4)
+                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}) (.*)', output_command[0])
+                personId2 = tmp_match.group(4)
+                if personId != personId2:
+                    return '查询的学生id不匹配'
+                credit = int(tmp_match.group(5))
+                if library.persons[personId].credit != credit:
+                    return '查询的学生的信用分应为 ' + str(library.persons[personId].credit)
             else:
                 result=library.action(input_command,output_command[0])
                 if result != '':

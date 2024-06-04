@@ -6,8 +6,10 @@ class Person:
     def __init__(self,id):
         self.id=id
         self.books={}
+        self.overdueBooks=set()
         self.typeB=False
         self.typeBU=False
+        self.credit=10
     def add_book(self,bookId:str,deadline:date):
         if 'BU' in bookId:
             self.typeBU=True
@@ -15,6 +17,8 @@ class Person:
             self.typeB=True
         self.books[bookId]=deadline
     def del_book(self,bookId):
+        if bookId in self.overdueBooks:
+            self.overdueBooks.remove(bookId)
         if 'BU' in bookId:
             self.typeBU=False
         elif 'B' in bookId:
@@ -32,6 +36,15 @@ class Person:
         return self.books[bookId]
     def change_time(self,bookId:str,deadline:date):
         self.books[bookId]=deadline
+    def check_overdue(self,today:date):
+        for bookId in self.books.keys():
+            if self.books[bookId]<today and bookId not in self.overdueBooks:
+                self.overdueBooks.add(bookId)
+                self.change_credit(-2)
+    def change_credit(self,score:int):
+        self.credit+=score
+        if self.credit>20:
+            self.credit=20
 
 
 
@@ -41,6 +54,7 @@ class Library:
         self.bro={} #借还处,{bookId:str,count:int}，有key则一定不为0
         self.bdc={} #漂流角,{bookId:str,count:int}，成为正式图书后会被移除
         self.bdcHot={}  #漂流角的图书借阅次数,{bookId:str,count:int}，成为正式图书后会被移除
+        self.donors={}  #捐献书籍与捐献者,{bookId:str,personId:str}
         self.ao=[]  #预约处,[(today:date,personId:str,bookId:str,ordered:bool)]
         self.aoLog=[]   #预约记录,[(personId:str,bookId:str)]
         self.today=date(2024, 1, 1)
@@ -49,9 +63,16 @@ class Library:
         self.bs[book]=count
     def update(self,isclose:bool,today:date):
         """
-        每次开馆时更新当前时间
+        每次都检查逾期书籍
+        开馆时更新当前时间
         闭馆时更新预约处的书
         """
+        for person in self.persons.values():
+            if isclose:
+                person.check_overdue(today+timedelta(days=1))
+            else:
+                person.check_overdue(today)
+
         if isclose:
             for i in range(0,self.ao.__len__()):
                 if (self.today - self.ao[i][0]).days>=4:
@@ -61,6 +82,7 @@ class Library:
             for i in range(0,self.ao.__len__()):
                 if (self.today - self.ao[i][0]).days>=5:
                     self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
+                    self.persons[self.ao[i][1]].change_credit(-3)
     def open_check(self)->str:
         """
         开馆整理后调用
@@ -87,7 +109,8 @@ class Library:
         if 'U' in bookId:
             if bookId not in self.bdc or self.bdc[bookId]==0 or 'A' in bookId:
                 return 'reject'
-            elif person.has_book(bookId) or ('B' in bookId and self.persons[personId].has_BU_book()):
+            elif (person.credit<0 or person.has_book(bookId) or
+                  ('B' in bookId and self.persons[personId].has_BU_book())):
                 self.bdc[bookId] -= 1
                 if bookId not in self.bro:
                     self.bro[bookId]=1
@@ -104,7 +127,8 @@ class Library:
         else:
             if bookId not in self.bs or self.bs[bookId]==0 or 'A' in bookId:
                 return 'reject'
-            elif self.persons[personId].has_book(bookId) or ('B' in bookId and self.persons[personId].has_B_book()):
+            elif (person.credit<0 or self.persons[personId].has_book(bookId) or
+                  ('B' in bookId and self.persons[personId].has_B_book())):
                 self.bs[bookId]-=1
                 if bookId not in self.bro:
                     self.bro[bookId] = 1
@@ -129,6 +153,8 @@ class Library:
             return '数据生成有误，请忽略此条数据',False
         person=self.persons[personId]
         due=person.get_time(bookId)<self.today
+        if due==False:
+            person.change_credit(1)
         if bookId not in self.bro:
             self.bro[bookId] = 1
         else:
@@ -144,6 +170,16 @@ class Library:
         if personId not in self.persons:
             self.persons[personId]=Person(personId)
         person=self.persons[personId]
+        if person.credit<0:
+            return 'reject'
+        for i in self.ao: #仅一个预约
+            if i[1]==personId and i[3]:
+                if ('B' in bookId and 'B' in i[2]) or (bookId==i[2]):
+                    return 'reject'
+        for i in self.aoLog:
+            if i[0]==personId:
+                if ('B' in bookId and 'B' in i[1]) or (bookId==i[1]):
+                    return 'reject'
         if 'U' in bookId:
             return 'reject'
         if 'A' in bookId or ('B' in bookId and person.has_B_book()) or person.has_book(bookId):
@@ -183,6 +219,8 @@ class Library:
         if not person.has_book(bookId):
             return '该同学没有这本书'+bookId
         days=(person.get_time(bookId)-self.today).days
+        if person.credit<0:
+            return 'reject'
         if days<0 or days>=5:
             return 'reject'
         if 'U' in bookId:
@@ -196,7 +234,11 @@ class Library:
                     return 'reject'
         person.change_time(bookId,person.get_time(bookId)+timedelta(days=30))
         return 'accept'
-    def donate(self,bookId:str)->str:
+    def donate(self,bookId:str,personId:str)->str:
+        if personId not in self.persons:
+            self.persons[personId] = Person(personId)
+        self.persons[personId].change_credit(2)
+        self.donors[bookId]=personId
         self.bdc[bookId]=1
         self.bdcHot[bookId]=0
         return 'accept'
@@ -254,7 +296,7 @@ class Library:
                 if result!=tmp_match.group(1):
                     return '应为 '+result
             elif tmp_match.group(3)=='donated':
-                result=self.donate(bookId)
+                result=self.donate(bookId,personId)
                 if result!=tmp_match.group(1):
                     return '应为 '+result
             else:
@@ -294,6 +336,7 @@ class Library:
             if self.bro[bookId]==0:
                 self.bro.pop(bookId)
             if 'U' in bookId:
+                self.persons[self.donors[bookId]].change_credit(2)
                 self.bdc.pop(bookId)
                 bookId = bookId.replace('U','')
             if bookId in self.bs:
@@ -410,6 +453,16 @@ def check():
                     result=library.orgnize(False,output_command[k])
                     if result!='':
                         return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
+        elif 'credit' in input_command:
+            tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}).*', input_command)
+            personId=tmp_match.group(4)
+            tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}) (.*)', output_command[0])
+            personId2=tmp_match.group(4)
+            if personId!=personId2:
+                return '查询的学生id不匹配'+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
+            credit=int(tmp_match.group(5))
+            if library.persons[personId].credit!=credit:
+                return '查询的学生的信用分应为 '+str(library.persons[personId].credit)+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
         else:
             result=library.action(input_command,output_command[0])
             if result != '':
