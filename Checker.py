@@ -467,6 +467,10 @@ def check():
             result=library.action(input_command,output_command[0])
             if result != '':
                 return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
+    if i!=input.__len__():
+        return "输出过少"
+    elif j!=input.__len__():
+        return "输出过多"
     return "Accepted!"
 
 if __name__ == '__main__':
