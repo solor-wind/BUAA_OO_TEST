@@ -461,6 +461,8 @@ def check():
             if personId!=personId2:
                 return '查询的学生id不匹配'+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
             credit=int(tmp_match.group(5))
+            if personId not in library.persons:
+                library.persons[personId]=Person(personId)
             if library.persons[personId].credit!=credit:
                 return '查询的学生的信用分应为 '+str(library.persons[personId].credit)+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
         else:
