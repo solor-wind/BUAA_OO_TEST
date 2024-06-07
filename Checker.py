@@ -471,7 +471,7 @@ def check():
                 return result+' 输入第'+str(i)+'行 输出第'+str(j)+'行'
     if i!=input.__len__():
         return "输出过少"
-    elif j!=input.__len__():
+    elif j!=output.__len__():
         return "输出过多"
     return "Accepted!"
 
