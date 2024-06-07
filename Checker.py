@@ -75,12 +75,13 @@ class Library:
 
         if isclose:
             for i in range(0,self.ao.__len__()):
-                if (self.today - self.ao[i][0]).days>=4:
+                if (self.today - self.ao[i][0]).days>=4 and self.ao[i][3]:
                     self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
+                    self.persons[self.ao[i][1]].change_credit(-3)
         else:
             self.today=today
             for i in range(0,self.ao.__len__()):
-                if (self.today - self.ao[i][0]).days>=5:
+                if (self.today - self.ao[i][0]).days>=5 and self.ao[i][3]:
                     self.ao[i]=(self.ao[i][0],self.ao[i][1],self.ao[i][2],False)
                     self.persons[self.ao[i][1]].change_credit(-3)
     def open_check(self)->str:
