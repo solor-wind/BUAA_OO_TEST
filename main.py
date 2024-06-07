@@ -1,133 +1,330 @@
-from pathlib import Path
+import random
+import signal
 import json
-import os
 import subprocess
-from DataGenerator import data_generator
-from Checker import Library
-import shutil
-from datetime import date,timedelta
-import re
 
-config = json.load(open('config.json',encoding='utf-8'))
-test_num = int(config['test_num'])
-del_temp_file = config['del_temp_file']
-jar_path = config['jar_path']
+import equivalent
+from Standardize import standardize_expr
 
-def file_load(file_path) -> list:
-    """
-    从指定路径加载txt文件的内容
-    :param file_path: txt文件路径
-    :return: 含有txt文件内容的一个列表(去除空行)
-    """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f'文件{file_path}不存在')
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f.readlines() if line.strip()]
 
-def load_output_to_file(file_path) -> None:
-    """
-    加载output.txt文件的内容到指定路径
-    """
-    path = Path(file_path)
-    if not path.parent.exists():
-        path.parent.mkdir(parents=True, exist_ok=True)
-    command = "type " + path.parent.__str__() + "\\input.txt" + " | java -jar " + jar_path + " > " + file_path
-    subprocess.run(command, shell=True)
-def process_function(case_id) -> str:
-    library = Library()
-    generator = data_generator(library)
-    proc = subprocess.Popen(
-        ['java','-jar', config['jar_path']],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    mkdir(f"workspace/{case_id}")
-    f_in = open(f"workspace/{case_id}/input.txt", 'w', encoding='utf-8')
-    f_out = open(f"workspace/{case_id}/output.txt", 'w', encoding='utf-8')
+##############################--对于时间过长的处理--###########################
 
-    try:
-        for command in generator.init_command_list:
-            f_in.write(command)
-            proc.stdin.write(command)
-            proc.stdin.flush()
-        while True:
-            input_command = generator.get_next_command()
-            if input_command == "":
-                break
-            f_in.write(input_command)
-            proc.stdin.write(input_command)
-            proc.stdin.flush()
-            output_command = []#proc.stdout.readline()
-            output_command.append(proc.stdout.readline())
-            try:
-                if not('-' in output_command[0] or int(output_command[0])==0):
-                    for i in range(0,int(output_command[0])):
-                        output_command.append(proc.stdout.readline())
-            except:
-                return '未获取到正确的输出:'+output_command[0]
-            for i in output_command:
-                f_out.write(i)
-                generator.add_command(i)
-            if 'OPEN' in input_command:
-                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\].*', input_command)
-                time = date(int(tmp_match.group(1)), int(tmp_match.group(2)), int(tmp_match.group(3)))
-                library.update(False,time)
-                if int(output_command[0])>0:
-                    for i in range(1,output_command.__len__()):
-                        result=library.orgnize(True,output_command[i])
-                        if result!='':
-                            return result
-                result=library.open_check()
-                if result!='':
-                    return result
-            elif 'CLOSE' in input_command:
-                library.update(True, time)
-                if int(output_command[0])>0:
-                    for i in range(1,output_command.__len__()):
-                        result=library.orgnize(False,output_command[i])
-                        if result!='':
-                            return result
-            elif 'credit' in input_command:
-                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}).*', input_command)
-                personId = tmp_match.group(4)
-                tmp_match = re.match(r'\[(\d{4})-(\d{2})-(\d{2})\] (\d{8}) (.*)', output_command[0])
-                personId2 = tmp_match.group(4)
-                if personId != personId2:
-                    return '查询的学生id不匹配'
-                credit = int(tmp_match.group(5))
-                if library.persons[personId].credit != credit:
-                    return '查询的学生的信用分应为 ' + str(library.persons[personId].credit)
-            else:
-                result=library.action(input_command,output_command[0])
-                if result != '':
-                    return result
-        return "Accepted!"
-    finally:
-        proc.stdin.close()
-        proc.stdout.close()
-        proc.stderr.close()
-        f_in.close()
-        f_out.close()
+def handler(signum, frame):
+    raise TimeoutError
 
-def mkdir(path):
-    path = Path(path)
-    if not path.exists():
-        path.mkdir(parents=True, exist_ok=True)
 
+##############################--全局变量的定义--##############################
+
+config = json.load(open("config.json", encoding='utf-8'))
+limit = 10  # 限制生成的基本单元数,每次更新
+
+unit_up_limit = 10  # 基本单元数上限
+
+# blank_prob=0.3   #空白符概率
+# sign_prob=0.5    #多余正负号的概率
+# zero_prob=0.1    #前导0概率
+
+expFunFactor = 0.2  # 指数函数因子概率
+# expFunFactor_exp=0.2    #指数函数因子后携带指数的概率
+myFunFactor = 0  # 自定义函数因子概率
+exprFactor = 0.2  # 表达式因子概率
+constFactor = 0.3  # 常数因子概率
+# constFactor_zero=0.05    #常数因子中产0概率
+# constFactor_big=0.05    #常数因子中产大数概率
+powerFunFactor = 0.3  # 幂函数因子概率
+
+myFun_name = []  # 函数名
+myFun_parameter = []  # 参数
+myFun_function = []  # 函数
+myFun_dict = {}  # 函数名-函数字典
+
+SetClock = True # 是否设置时钟，若为windows建议将此选项关闭
+ClockTime = 20  # 时钟时间
+
+
+##############################--小函数--##############################
+# 生成空白符、正负号、前导0、指数
+def generate_blank():
+    if random.random() < float(config["blank_prob"]):
+        if random.random() < 0.8:
+            return ' '
+        else:
+            return '\t'
+    else:
+        return ''
+
+
+def generate_sign():
+    if random.random() < float(config["sign_prob"]):
+        return ''
+    else:
+        if random.random() > 0.5:
+            return '+'
+        else:
+            return '-'
+
+
+def generate_zero():
+    if random.random() < float(config["zero_prob"]):
+        return '0'
+    else:
+        return ''
+
+
+def generate_exp():
+    string = '^' + generate_blank()
+    if random.random() > float(config["sign_prob"]):
+        string = string + '+'
+    string = string + generate_zero()
+    return string + str(random.randint(0, 8))  # 指数上限？
+
+
+##############################--不同因子的生成--##############################
+
+def generate_constant():  # 常数因子
+    global limit
+    constFactor_zero = config["constFactor_zero"]
+    constFactor_big = config["constFactor_big"]
+    limit = limit - 1
+    probability = random.random()
+    tmp = 0
+    if probability < constFactor_zero:
+        return generate_sign() + '0'
+    elif probability < constFactor_zero + constFactor_big:
+        tmp = random.randint(-999999999, 999999999)
+    else:
+        tmp = random.randint(-20, 20)
+    if tmp > 0:
+        return generate_sign().replace('-', '+') + str(tmp)
+    else:
+        return str(tmp)
+
+
+def generate_power():  # 幂函数因子
+    global limit
+    limit = limit - 1
+    return 'x' + generate_blank() + generate_exp()
+
+
+def generate_expFun(floor):  # 指数函数因子
+    string = 'exp' + generate_blank() + '(' + generate_blank() + generate_factor(floor - 1) + generate_blank() + ')'
+    if random.random() < config["expFunFactor_exp"]:
+        string = string + generate_blank() + generate_exp()
+    return string
+
+
+def generate_myFun(floor):  # 自定义函数因子
+    if myFun_name.__len__() == 0:
+        return generate_factor(floor)  # 没有自定义函数时重新产生因子
+    key = random.randint(0, myFun_function.__len__() - 1)
+    string = myFun_name[key] + generate_blank() + '(' + generate_blank() + generate_factor(floor - 1) + generate_blank()
+    # string=string+generate_factor(floor-1).replace('exp','a').replace('x',myFun_parameter[key][0]).replace('a','exp')
+    # string=string+generate_blank()
+    for i in range(1, myFun_parameter[key].__len__()):
+        string = string + ',' + generate_blank() + generate_factor(floor - 1) + generate_blank()
+        # string=string+generate_factor(floor-1).replace('exp','a').replace('x',myFun_parameter[key][i]).replace('a','exp')
+        # string=string+generate_blank()+generate_blank()
+    return string + ')'
+
+
+##############################--表达式、项、因子、自定义函数的生成--##############################
+
+def generate_fun():  # 产生自定义函数
+    global myFun_name, myFun_parameter, myFun_function, myFunFactor, limit, constFactor, powerFunFactor
+    myFun_name = []  # 函数名
+    myFun_parameter = []  # 参数
+    myFun_function = []  # 函数
+    tmp_myFun = myFunFactor
+    myFunFactor = 0  # 自定义函数因子概率调成0，不能再生成自定义函数
+    constFactor += tmp_myFun / 2
+    powerFunFactor += tmp_myFun / 2
+    num = random.randint(0, 3)
+    namelist = ['f', 'g', 'h']
+    for i in range(0, num):
+        limit = config["myFun_unit_limit"]
+        myFun_name.append(random.choice(namelist))
+        namelist.remove(myFun_name[i])
+
+        canshu_num = random.randint(1, 3)
+        canshulist = ['x', 'y', 'z']
+        tmp_canshu = []
+        for j in range(0, canshu_num):
+            tmp_canshu.append(random.choice(canshulist))
+            canshulist.remove(tmp_canshu[j])
+        myFun_parameter.append(tmp_canshu)
+
+        tmp_function = generate_expr(config["myFun_floor"])
+        # 随机替换参数
+        pos = 0
+        j = 0
+        while pos < tmp_function.__len__():
+            if tmp_function[pos] == 'x' and (pos + 1 == tmp_function.__len__() or tmp_function[pos + 1] != 'p'):
+                tmp_list = list(tmp_function)
+                tmp_list[pos] = myFun_parameter[i][j]
+                tmp_function = ''.join(tmp_list)
+                j += 1
+                if j == canshu_num:
+                    break
+            pos += 1
+        while pos < tmp_function.__len__():
+            if tmp_function[pos] == 'x' and (pos + 1 == tmp_function.__len__() or tmp_function[pos + 1] != 'p'):
+                tmp_list = list(tmp_function)
+                tmp_list[pos] = random.choice(myFun_parameter[i])
+                tmp_function = ''.join(tmp_list)
+            pos += 1
+        myFun_function.append(tmp_function)
+    myFunFactor = tmp_myFun
+    constFactor -= tmp_myFun / 2
+    powerFunFactor -= tmp_myFun / 2
+
+
+def generate_factor(floor):  # 产生因子
+    global expFunFactor, myFunFactor, constFactor, powerFunFactor, limit
+    # expFunFactor=float(config["expFunFactor"])
+    # myFunFactor=config["myFunFactor"]
+    # constFactor=config["constFactor"]
+    # powerFunFactor=config["powerFunFactor"]
+    probability = random.random()
+    if floor <= 0:
+        if constFactor + powerFunFactor == 0:
+            return '0'
+        elif probability < constFactor / (constFactor + powerFunFactor):
+            return generate_constant()
+        else:
+            return generate_power()
+    if probability < expFunFactor:
+        tmp_limit = limit - limit / 2
+        limit /= 2  ########
+        string = generate_expFun(floor - 1)
+        limit += tmp_limit
+        return string
+    elif probability < myFunFactor + expFunFactor:
+        return generate_myFun(floor - 1)
+    elif probability < myFunFactor + expFunFactor + exprFactor:
+        tmp_limit = limit - limit / 2
+        limit /= 2  ########
+        string = '(' + generate_expr(floor - 1) + ')'
+        limit += tmp_limit
+        return string
+    elif probability < myFunFactor + expFunFactor + exprFactor + constFactor:
+        return generate_constant()
+    else:
+        return generate_power()
+
+
+def generate_term(floor):  # 产生项
+    global limit
+    string = generate_sign() + generate_blank() + generate_factor(floor)
+    tmp_limit = int(limit / (int(config["floor"]) - floor + 1) / 2)  # limit会变########
+    for i in range(0, tmp_limit - 1):
+        string = string + generate_blank() + '*' + generate_blank() + generate_factor(floor)
+        if limit <= tmp_limit / 3 * 2:
+            break
+    return string
+
+
+def generate_expr(floor):  # 产生表达式
+    global limit
+    string = ''
+    string = string + generate_blank() + generate_sign() + generate_blank() \
+             + generate_term(floor) + generate_blank()
+    tmp_limit = int(limit / (int(config["floor"]) - floor + 1))  # limit会变########
+    for i in range(0, tmp_limit - 1):
+        if random.random() > 0.5:
+            string = string + '+'
+        else:
+            string = string + '-'
+        string = string + generate_blank() + generate_term(floor) + generate_blank()
+        if limit <= 0:
+            break
+    return string
+
+
+##############################--主函数--##############################
 
 if __name__ == "__main__":
-    shutil.rmtree("workspace", ignore_errors=True)
-    failed_list = []
-    for i in range(test_num):
-        result = process_function(i + 1)
-        if del_temp_file and result == "Accepted!":
-            shutil.rmtree(f"workspace/{i + 1}")
-        elif result != "Accepted!":
-            failed_list.append(i + 1)
-        print(f"Case {i + 1}: {result}")
-    if failed_list:
-        print(f"Failed cases: {failed_list}")
-    else:
-        print("All cases passed!")
+    config = json.load(open("config.json", encoding='utf-8'))
+    test_num = int(config["test_num"])  # 测试用例数
+    unit_low_limit = int(config["unit_low_limit"])  # 基本单元数下限
+    unit_up_limit = int(config["unit_up_limit"])  # 基本单元数上限
+    floor = int(config["floor"])  # 括号嵌套层数上限
+    automyFun = bool(config["automyFun"])  # 是否自动生成自定义函数
+
+    expFunFactor = float(config["expFunFactor"])
+    myFunFactor = float(config["myFunFactor"])
+    constFactor = float(config["constFactor"])
+    powerFunFactor = float(config["powerFunFactor"])
+
+    jarPath = config["jarPath"]
+
+    SetClock = bool(config["SetClock"])
+    ClockTime = int(config["ClockTime"])
+
+    inputs = []
+    standardize_inputs = []
+    passed = True
+
+    # if SetClock:
+    #     signal.signal(signal.SIGALRM, handler)
+
+    with (open("testcases.txt", "w") as f_testcases, open("extended.txt", "w") as f_extended):
+        for inputs_index in range(0, test_num):
+            f_testcases.write(str(inputs_index + 1) + "\n")
+            if automyFun:
+                generate_fun()
+            else:
+                myFun_name = config["myFun_name"]
+                myFun_parameter = config["myFun_parameter"]
+                myFun_function = config["myFun_function"]
+            myFun_dict = {key: value for key, value in zip(myFun_name, zip(myFun_parameter, myFun_function))}
+            f_testcases.write('\t' + str(myFun_name.__len__()) + "\n")
+            inputs.append(str(myFun_name.__len__()) + "\n")
+            for j in range(0, myFun_name.__len__()):
+                tmp_function = myFun_name[j] + generate_blank() + '(' + generate_blank()
+                tmp_function = tmp_function + ','.join(myFun_parameter[j])
+                tmp_function = tmp_function + generate_blank() + ')' + generate_blank() + '=' + generate_blank() + \
+                               myFun_function[j]
+                f_testcases.write('\t' + tmp_function + "\n")
+                inputs.append(tmp_function + "\n")
+            limit = random.randint(unit_low_limit, unit_up_limit)
+            NotStandardizedExpr = generate_expr(floor)
+            StandardizedExpr = standardize_expr(NotStandardizedExpr, myFun_dict)
+            f_extended.write(StandardizedExpr + "\n")
+            standardize_inputs.append(StandardizedExpr)
+            f_testcases.write('\t' + NotStandardizedExpr + "\n")
+            inputs.append(NotStandardizedExpr + "\n")
+    inputs_index = 0
+    standardize_inputs_index = 0
+    passed = True
+    with open("result.txt", "w") as result_file:
+        while (inputs_index < len(inputs)):
+            proc = subprocess.Popen(['java', '-jar', jarPath, '>result.txt'], stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True)
+            num = int(inputs[inputs_index])
+            for j in range(inputs_index, inputs_index + num + 2):
+                proc.stdin.write(inputs[j])
+            proc.stdin.flush()
+            # if SetClock:
+            #     signal.alarm(ClockTime)
+            try:
+                output, error = output, error = proc.communicate()
+                if not equivalent.expressions_are_equivalent(standardize_inputs[standardize_inputs_index], output):
+                    print("第", standardize_inputs_index + 1, "个测试用例不通过, 您的输出为", output)
+                    passed = False
+                else:
+                    print("第", standardize_inputs_index + 1, "个测试用例AC")
+                # if SetClock:
+                #     signal.alarm(0)
+            except TimeoutError:
+                print("第", standardize_inputs_index + 1, "个测试用例超时,已为您跳过")
+            except OverflowError or MemoryError:
+                print("数据过大， 已为您跳过第",  standardize_inputs_index + 1,  "条数据点")
+            except Exception as e:
+                print("第", standardize_inputs_index + 1, "个测试用例不通过, 您的输出为", output)
+                passed = False
+            standardize_inputs_index = standardize_inputs_index + 1
+            inputs_index = inputs_index + num + 2
+            result_file.write(output)
+    if passed:
+        print("您已通过全部测试样例")
