@@ -1,24 +1,23 @@
 {
+  "in_path": "input.exe",
+  "jar_path": "D:\\study\\OO\\project\\OO\\hw_5\\out\\artifacts\\hw_5_jar\\code.jar",
+
+  "deleteTempFile": true,
+  "set_clock": false,
+  "clock_time": 100,
+
+  "max_thread_num": 20,
+
   "test_num": 100,
-  "basic_command_num": 100,
-  "jar_path": "D:\\study\\OO\\project\\OO\\hw_15\\out\\artifacts\\hw_15_jar\\hw_15.jar",
-  "del_temp_file" : true,
-
-  "begin_date": "2024-1-1",
-  "end_date": "2024-12-30",
-  "max_num_of_days_with_command": 10,
-  "max_num_of_book_identifier": 5,
-  "max_num_of_book_for_each_identifier": 3,
-  "max_num_of_person": 5,
-  "borrow_prob": 0.4,
-  "query_prob": 0.2,
-  "order_prob": 0.3,
-  "donate_prob" : 0.03,
-  "renew_prob" : 0.5,
-  "return_prob": 0.8,
-  "pick_1_prob": 0.3,
-  "pick_2_prob": 0.5,
-
-  "input_file": "input.txt",
-  "output_file": "output.txt"
+  "time_limit": 15,
+  "command_limit": 20,
+  "fault_tolerance": 0.01,
+  "elevator_num": 6,
+  "default_floor": 1,
+  "min_floor": 1,
+  "max_floor": 11,
+  "move_time": 0.4,
+  "open_time": 0.2,
+  "close_time": 0.2,
+  "max_capacity": 6
 }
